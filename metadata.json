@@ -1,0 +1,6 @@
+{
+  "name": "Jab We Matched",
+  "description": "Live interactive audience question polling for the Jab We Matched dating show and matchmaking event with real-time voting, spectator hot takes, envelope reveal animations, and stage broadcast.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

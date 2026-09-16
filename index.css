@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #580a14;
+    color: #fce7f3;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+}
+
+.font-script {
+  font-family: 'Great Vibes', cursive;
+}
+
+.font-matched {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+/* 3D Poster Text Shadow for "MATCHED" */
+.matched-3d-text {
+  color: #ffccd5;
+  text-shadow: 
+    3px 3px 0px #5c0715,
+    5px 5px 0px #30030a,
+    7px 7px 12px rgba(0, 0, 0, 0.6);
+}
+
+.matched-3d-text-lg {
+  color: #fed7aa;
+  background: linear-gradient(180deg, #ffffff 0%, #fed7e2 60%, #fbcfe8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: #fbcfe8;
+  filter: drop-shadow(4px 4px 0px #5a0715) drop-shadow(6px 6px 14px rgba(0, 0, 0, 0.7));
+}
+
+/* Moroccan / Quatrefoil Wallpaper Pattern from the Poster */
+.moroccan-pattern {
+  background-color: #831020;
+  background-image: 
+    radial-gradient(#b91c1c 15%, transparent 16%),
+    radial-gradient(#f472b6 15%, transparent 16%),
+    radial-gradient(circle at 50% 50%, rgba(244, 114, 182, 0.3) 0%, transparent 60%);
+  background-position: 0 0, 30px 30px, 0 0;
+  background-size: 60px 60px, 60px 60px, 120px 120px;
+}
+
+/* High-fidelity SVG Moroccan Quatrefoil Pattern */
+.bg-quatrefoil {
+  background-color: #7f0d1b;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23f472b6' fill-opacity='0.22'%3E%3Cpath d='M40 0 C44 14 54 14 60 20 C66 26 66 36 80 40 C66 44 66 54 60 60 C54 66 44 66 40 80 C36 66 26 66 20 60 C14 54 14 44 0 40 C14 36 14 26 20 20 C26 14 36 14 40 0 Z'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(0, 0)'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(80, 0)'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(0, 80)'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(80, 80)'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Romantic Lace Border Inset Frame */
+.lace-frame {
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 0 0 4px rgba(244, 114, 182, 0.3), 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Red Love Envelope Styles */
+.envelope-card {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 60%, #9f1239 100%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 16px 36px -8px rgba(76, 5, 25, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.envelope-flap {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+@keyframes heartThump {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.15); }
+  40% { transform: scale(0.95); }
+  60% { transform: scale(1.1); }
+}
+
+.animate-heart-thump {
+  animation: heartThump 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(225, 29, 72, 0.4), 0 0 40px rgba(244, 114, 182, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(225, 29, 72, 0.8), 0 0 65px rgba(244, 114, 182, 0.45);
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) scale(0.8) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-50vh) scale(1.15) rotate(15deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-105vh) scale(1.4) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 26s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.glass-panel-crimson {
+  background: rgba(88, 10, 20, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(251, 207, 232, 0.3);
+}
+
+.glass-panel-dark {
+  background: rgba(38, 4, 10, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+}
+
+.neon-text-rose {
+  text-shadow: 0 0 12px rgba(244, 63, 94, 0.7), 0 0 24px rgba(244, 63, 94, 0.4);
+}
+
+.neon-text-gold {
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 0 24px rgba(245, 158, 11, 0.3);
+}
+
+

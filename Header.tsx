@@ -1,0 +1,245 @@
+import React, { useState } from 'react';
+import { usePollContext } from './PollContext';
+import { JabWeMatchedBrand } from './JabWeMatchedBrand';
+import { 
+  Tv, 
+  Smartphone, 
+  Sliders, 
+  Volume2, 
+  VolumeX, 
+  Users, 
+  Sparkles, 
+  Edit3, 
+  Check, 
+  Radio,
+  Heart,
+  Plus,
+  QrCode,
+  Globe,
+  Copy,
+  ExternalLink
+} from 'lucide-react';
+
+export function Header() {
+  const { 
+    activeView, 
+    setActiveView, 
+    voterName, 
+    setVoterName, 
+    soundEnabled, 
+    setSoundEnabled, 
+    state,
+    isConnected,
+    isAdmin,
+    setIsCreateQuestionOpen,
+    setIsQrModalOpen,
+    publicWebsiteUrl,
+    joinUrl
+  } = usePollContext();
+
+  const [copiedSite, setCopiedSite] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(voterName);
+
+  const handleNameSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nameInput.trim()) {
+      setVoterName(nameInput.trim());
+      setIsEditingName(false);
+    }
+  };
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-rose-800/50 bg-[#4c0519]/95 backdrop-blur-xl shadow-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-col md:flex-row items-center justify-between gap-3">
+        {/* Brand & Event Title */}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+          <div className="flex items-center gap-2">
+            <JabWeMatchedBrand size="md" />
+            
+            <div className="hidden sm:flex flex-col ml-2 border-l border-rose-700/50 pl-2.5">
+              <span className="text-[10px] font-black tracking-widest text-pink-300 uppercase flex items-center gap-1 font-mono">
+                <Radio className="w-2.5 h-2.5 text-red-400 animate-pulse" /> LIVE STAGE POLL
+              </span>
+              <span className="text-[11px] text-pink-100 font-medium">
+                Speed Dating & Matchmaking Special
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Audience Counter for Mobile */}
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-950/80 border border-rose-500/40 text-pink-200 text-xs font-semibold">
+              <Users className="w-3.5 h-3.5 text-pink-300" />
+              <span>{state.connectedAudienceCount} in Hall</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Center View Selector Tabs — Stage & Host only ever render here
+            once the admin passphrase has been entered on this device. A
+            non-admin visitor (e.g. anyone who scanned the QR code) sees a
+            plain "Audience Pad" badge with no way to reach the other views. */}
+        {isAdmin ? (
+          <div className="flex items-center p-1 rounded-xl bg-[#30030a]/80 border border-pink-400/30 shadow-inner">
+            <button
+              id="tab-audience-view"
+              onClick={() => setActiveView('audience')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                activeView === 'audience'
+                  ? 'bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 text-white shadow-md shadow-rose-900/50'
+                  : 'text-pink-200/80 hover:text-white hover:bg-rose-900/40'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Audience Pad</span>
+            </button>
+
+            <button
+              id="tab-stage-view"
+              onClick={() => setActiveView('stage')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                activeView === 'stage'
+                  ? 'bg-gradient-to-r from-amber-500 via-rose-600 to-red-600 text-white shadow-md shadow-amber-900/50'
+                  : 'text-pink-200/80 hover:text-white hover:bg-rose-900/40'
+              }`}
+            >
+              <Tv className="w-3.5 h-3.5" />
+              <span>Stage Big Screen</span>
+            </button>
+
+            <button
+              id="tab-host-view"
+              onClick={() => setActiveView('host')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold tracking-wide transition-all ${
+                activeView === 'host'
+                  ? 'bg-gradient-to-r from-purple-700 via-rose-600 to-pink-600 text-white shadow-md shadow-purple-900/50'
+                  : 'text-pink-200/80 hover:text-white hover:bg-rose-900/40'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Host Console</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#30030a]/80 border border-pink-400/30 shadow-inner text-xs font-bold tracking-wide text-pink-100">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>Audience Pad</span>
+          </div>
+        )}
+
+        {/* Right Info, Profile & Controls */}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+          {/* Active Audience Connection indicator (Designed for 500 spectators) */}
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#35040d]/90 border border-pink-400/30 text-pink-100 text-xs">
+            <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            <Users className="w-3.5 h-3.5 text-pink-300" />
+            <span className="font-bold text-white text-sm">{state.connectedAudienceCount}</span>
+            <span className="text-pink-200/80 text-[11px]">Spectators</span>
+          </div>
+
+          {/* Public Website URL Copy Button */}
+          <button
+            id="header-btn-copy-website"
+            onClick={async () => {
+              try {
+                const urlToCopy = publicWebsiteUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+                if (navigator.clipboard?.writeText) {
+                  await navigator.clipboard.writeText(urlToCopy);
+                }
+                setCopiedSite(true);
+                setTimeout(() => setCopiedSite(false), 2500);
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+              copiedSite
+                ? 'bg-emerald-600 border-emerald-400 text-white'
+                : 'bg-black/40 hover:bg-black/70 border-pink-400/30 text-pink-200 hover:text-white'
+            }`}
+            title={`Copy Live Website URL (${publicWebsiteUrl})`}
+          >
+            {copiedSite ? <Check className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5 text-pink-300" />}
+            <span>{copiedSite ? 'Site Copied!' : 'Website Link'}</span>
+          </button>
+
+          {/* Join QR Code Button */}
+          <button
+            id="header-btn-qr-code"
+            onClick={() => setIsQrModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 hover:bg-black/70 border border-pink-400/40 text-pink-200 hover:text-white text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
+            title="Show Spectator Join QR Code for Mobile Phones"
+          >
+            <QrCode className="w-3.5 h-3.5 text-pink-300" />
+            <span className="hidden sm:inline">Join QR</span>
+          </button>
+
+          {/* Add Question Button */}
+          <button
+            id="header-btn-add-question"
+            onClick={() => setIsCreateQuestionOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all"
+            title="Add a new live question or dilemma to the show"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">+ Add Question</span>
+            <span className="sm:hidden">+ Question</span>
+          </button>
+
+          {/* Sound FX Toggle */}
+          <button
+            id="toggle-sound-btn"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title={soundEnabled ? 'Mute Event Audio' : 'Enable Event Audio'}
+            className={`p-2 rounded-lg border transition-all ${
+              soundEnabled
+                ? 'bg-rose-900/60 border-pink-500/40 text-pink-200 hover:bg-rose-800'
+                : 'bg-[#2a040b] border-rose-950 text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          {/* Voter Screen Name */}
+          <div className="flex items-center">
+            {isEditingName ? (
+              <form onSubmit={handleNameSave} className="flex items-center gap-1">
+                <input
+                  id="input-voter-name"
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  maxLength={20}
+                  className="bg-[#2a040b] text-xs text-white px-2.5 py-1 rounded-lg border border-pink-400 focus:outline-none focus:ring-1 focus:ring-pink-300 w-32"
+                  placeholder="Your Name"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="p-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+              </form>
+            ) : (
+              <button
+                id="btn-edit-voter-name"
+                onClick={() => {
+                  setNameInput(voterName);
+                  setIsEditingName(true);
+                }}
+                className="group flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#30030a]/90 border border-pink-400/25 hover:border-pink-300 text-xs transition-all shadow-sm"
+              >
+                <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
+                <span className="text-pink-200/80">Voting:</span>
+                <span className="font-bold text-pink-100 max-w-[110px] truncate">{voterName}</span>
+                <Edit3 className="w-3 h-3 text-pink-400/60 group-hover:text-pink-200 transition-colors" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
