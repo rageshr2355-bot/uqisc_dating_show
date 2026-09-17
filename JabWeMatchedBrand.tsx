@@ -41,31 +41,36 @@ export function JabWeMatchedBrand({ size = 'md', showSubtitle = true }: BrandPro
           </div>
         )}
 
-        {/* Big Envelope Box as in Poster */}
-        <div className="relative rounded-2xl bg-gradient-to-b from-[#e11d48] to-[#9f1239] border-[3px] border-white shadow-2xl p-6 md:p-8 overflow-hidden">
-          {/* Triangular flap highlight */}
-          <div 
-            className="absolute top-0 left-0 right-0 h-16 bg-[#be123c]/90 border-b-2 border-white/50"
-            style={{ clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }}
-          />
+        {/* Big Envelope Box as in Poster — wrapped so the heart seal below
+            can straddle the top edge without being clipped by this card's
+            own overflow-hidden (needed for its rounded corners/flap). */}
+        <div className="relative">
+          <div className="relative rounded-2xl bg-gradient-to-b from-[#e11d48] to-[#9f1239] border-[3px] border-white shadow-2xl p-6 md:p-8 overflow-hidden">
+            {/* Triangular flap highlight */}
+            <div 
+              className="absolute top-0 left-0 right-0 h-16 bg-[#be123c]/90 border-b-2 border-white/50"
+              style={{ clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }}
+            />
 
-          {/* Central Heart Seal */}
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+            {/* Script "jab we" */}
+            <div className="relative z-10 font-script text-4xl sm:text-5xl text-white drop-shadow-md -rotate-2 -mb-2 mt-4">
+              jab we
+            </div>
+
+            {/* Heavy Block "MATCHED" with 3D drop shadow */}
+            <div className="relative z-10 font-matched text-4xl sm:text-6xl md:text-7xl font-black tracking-widest text-[#fbcfe8] matched-3d-text uppercase">
+              MATCHED
+            </div>
+          </div>
+
+          {/* Central Heart Seal — sits outside the clipped card so it can
+              fully straddle the top border, not just its bottom half. */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
             <div className="w-8 h-8 rounded-full bg-pink-100/90 shadow-lg flex items-center justify-center border border-white animate-heart-thump">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-rose-600 text-rose-600">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
               </svg>
             </div>
-          </div>
-
-          {/* Script "jab we" */}
-          <div className="relative z-10 font-script text-4xl sm:text-5xl text-white drop-shadow-md -rotate-2 -mb-2 mt-4">
-            jab we
-          </div>
-
-          {/* Heavy Block "MATCHED" with 3D drop shadow */}
-          <div className="relative z-10 font-matched text-4xl sm:text-6xl md:text-7xl font-black tracking-widest text-[#fbcfe8] matched-3d-text uppercase">
-            MATCHED
           </div>
         </div>
       </div>
