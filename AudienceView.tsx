@@ -322,7 +322,7 @@ export function AudienceView() {
           </div>
 
           <div className="relative z-10 text-xs font-script text-pink-200 tracking-widest drop-shadow mb-0.5">
-            uabc presents...
+            uqisc presents...
           </div>
 
           <div className="relative z-10 flex items-center justify-center gap-2 mb-2">

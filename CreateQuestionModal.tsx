@@ -226,7 +226,7 @@ export function CreateQuestionModal() {
             </div>
             <div>
               <div className="text-[11px] font-script text-pink-200 tracking-wider">
-                uabc presents • live audience stage interactive
+                uqisc presents • live audience stage interactive
               </div>
               <h2 className="text-lg sm:text-xl font-black font-matched tracking-wider uppercase matched-3d-text">
                 Add Live Show Question

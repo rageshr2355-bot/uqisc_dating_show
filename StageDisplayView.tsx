@@ -137,7 +137,7 @@ export function StageDisplayView() {
         {/* Event Logo & Category */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/40 border border-white/40 shadow-md">
-            <span className="text-xs font-script text-pink-200">uabc presents</span>
+            <span className="text-xs font-script text-pink-200">uqisc presents</span>
             <span className="font-matched text-sm font-black text-pink-100 tracking-wider matched-3d-text">
               JAB WE MATCHED
             </span>

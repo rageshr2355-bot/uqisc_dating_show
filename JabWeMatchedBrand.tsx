@@ -37,7 +37,7 @@ export function JabWeMatchedBrand({ size = 'md', showSubtitle = true }: BrandPro
         {/* Presenter label */}
         {showSubtitle && (
           <div className="text-sm font-script text-pink-200 mb-1 tracking-widest drop-shadow">
-            uabc presents...
+            uqisc presents...
           </div>
         )}
 

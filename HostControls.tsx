@@ -209,7 +209,7 @@ export function HostControls() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl bg-[#40040f]/95 border-2 border-white shadow-2xl">
           <div>
             <div className="text-xs font-script text-pink-200 tracking-widest drop-shadow mb-0.5">
-              uabc presents • backstage director deck
+              uqisc presents • backstage director deck
             </div>
             <h1 className="text-2xl sm:text-3xl font-black font-matched text-white matched-3d-text uppercase tracking-wider">
               JAB WE MATCHED HOST CONTROLS
