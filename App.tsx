@@ -4,8 +4,6 @@ import { Header } from './Header';
 import { AudienceView } from './AudienceView';
 import { StageDisplayView } from './StageDisplayView';
 import { HostControls } from './HostControls';
-import { ReactionOverlay } from './ReactionOverlay';
-import { CreateQuestionModal } from './CreateQuestionModal';
 import { EditQuestionModal } from './EditQuestionModal';
 import { JoinQrCodeModal } from './JoinQrCodeModal';
 import { StageCornerQr } from './StageCornerQr';
@@ -40,14 +38,8 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#580a14] text-pink-50 selection:bg-rose-600 selection:text-white relative">
-      {/* Real-time Floating Audience Emoji Reaction Particles */}
-      <ReactionOverlay />
-
       {/* Actual Scannable Join QR Code Modal */}
       <JoinQrCodeModal />
-
-      {/* Global Add Question Modal (Accessible by audience or host) */}
-      <CreateQuestionModal />
 
       {/* Host Question & Text Edit Modal */}
       <EditQuestionModal />

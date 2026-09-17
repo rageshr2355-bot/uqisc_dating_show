@@ -71,6 +71,29 @@ export function StageDisplayView() {
 
   return (
     <div className="relative min-h-[90vh] flex flex-col justify-between p-4 sm:p-8 bg-quatrefoil overflow-hidden text-pink-50">
+      {/* Full-Screen Anonymous Confession Spotlight — takes over the stage
+          screen when the host launches one. Only ever an already-approved
+          confession; see the launch endpoint on the server. */}
+      {state.featuredConfessionId && (() => {
+        const featured = state.confessions.find((c) => c.id === state.featuredConfessionId);
+        if (!featured) return null;
+        return (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 sm:p-16 bg-black/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300">
+            <div className="relative max-w-4xl w-full text-center">
+              <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-purple-100 border-4 border-white shadow-2xl flex items-center justify-center mb-6 sm:mb-8 animate-pulse-glow">
+                <Mail className="w-10 h-10 sm:w-12 sm:h-12 text-purple-700" />
+              </div>
+              <div className="text-sm sm:text-base font-script text-purple-200 tracking-widest mb-3 sm:mb-4">
+                an anonymous confession from the crowd
+              </div>
+              <p className="text-2xl sm:text-4xl lg:text-5xl font-bold italic text-white leading-snug drop-shadow-2xl">
+                "{featured.text}"
+              </p>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Delicate white lace corner embroidery from the poster */}
       <LaceCornerDecoration position="top-left" />
       <LaceCornerDecoration position="bottom-right" />

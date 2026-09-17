@@ -4,7 +4,6 @@ import { PollOption } from './types';
 import { JabWeMatchedBrand, LaceCornerDecoration } from './JabWeMatchedBrand';
 import { 
   CheckCircle2, 
-  Flame, 
   Send, 
   PlusCircle, 
   Lock, 
@@ -22,23 +21,12 @@ import {
   MailCheck,
   Check,
   Users,
-  Plus,
   Radio,
   QrCode,
   Copy,
   ExternalLink,
-  Smartphone,
-  Edit2
+  Smartphone
 } from 'lucide-react';
-
-const REACTION_EMOJIS = [
-  { emoji: '🌹', label: 'True Love' },
-  { emoji: '🚩', label: 'Red Flag' },
-  { emoji: '🔥', label: 'Chemistry' },
-  { emoji: '💔', label: 'Friendzone' },
-  { emoji: '🍿', label: 'Melodrama' },
-  { emoji: '💖', label: 'Soulmates' },
-];
 
 export function AudienceView() {
   const { 
@@ -48,10 +36,7 @@ export function AudienceView() {
     myVotes, 
     castVote, 
     addAudienceOption, 
-    sendReaction, 
     state,
-    switchActivePoll,
-    setIsCreateQuestionOpen,
     setIsConfessionModalOpen,
     setIsQrModalOpen,
     joinUrl,
@@ -103,7 +88,6 @@ export function AudienceView() {
   const [isAddingOption, setIsAddingOption] = useState(false);
 
   // Tab for hot takes feed vs ballot
-  const [showHotTakesFeed, setShowHotTakesFeed] = useState(true);
   const [showConfessionsFeed, setShowConfessionsFeed] = useState(true);
 
   if (!activePoll) {
@@ -249,64 +233,6 @@ export function AudienceView() {
               {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copiedLink ? 'Copied URL!' : 'Copy Link'}</span>
             </button>
-          </div>
-        </div>
-
-        {/* Tonight's Show Questions Navigator */}
-        <div className="p-3.5 rounded-2xl bg-black/50 backdrop-blur-md border border-pink-400/30 shadow-lg space-y-2.5">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-              </span>
-              <span className="text-xs font-bold text-pink-200 uppercase tracking-wider font-mono">
-                Tonight's Show Ballots ({state.polls.length})
-              </span>
-            </div>
-
-            <button
-              id="audience-propose-question-btn"
-              onClick={() => setIsCreateQuestionOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-bold shadow-md transition-all active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Add / Suggest Question</span>
-            </button>
-          </div>
-
-          {/* Question Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-            {state.polls.map((p, idx) => {
-              const isSelected = p.id === activePoll.id;
-              const hasVoted = Boolean(myVotes[p.id]);
-
-              return (
-                <button
-                  key={p.id}
-                  id={`audience-poll-tab-${p.id}`}
-                  onClick={() => switchActivePoll(p.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap transition-all border ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-red-700 to-rose-700 border-white text-white shadow-md'
-                      : 'bg-black/40 border-pink-500/20 text-pink-200/90 hover:bg-black/60 hover:text-white'
-                  }`}
-                >
-                  <span className="opacity-70">Q{idx + 1}</span>
-                  <span className="max-w-[130px] sm:max-w-[180px] truncate">{p.title}</span>
-
-                  {hasVoted && (
-                    <span className="p-0.5 rounded-full bg-emerald-500/30 text-emerald-300 text-[10px]" title="You voted on this">
-                      ✓
-                    </span>
-                  )}
-
-                  {isSelected && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-pink-300 animate-pulse" />
-                  )}
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -649,80 +575,6 @@ export function AudienceView() {
             </div>
           </div>
         )}
-
-        {/* Live Audience Emoji Reactions Bar */}
-        <div className="p-4 rounded-3xl bg-[#30030a]/90 border border-pink-300/30 shadow-lg">
-          <div className="flex items-center justify-between text-xs font-bold text-pink-200 mb-2 font-mono uppercase">
-            <span>Send Live Stage Reactions</span>
-            <span className="text-[10px] text-pink-300/70">500 spectators live</span>
-          </div>
-
-          <div className="grid grid-cols-6 gap-2">
-            {REACTION_EMOJIS.map((rx) => {
-              const count = state.reactionCounts[rx.emoji] || 0;
-              return (
-                <button
-                  key={rx.emoji}
-                  id={`btn-react-${rx.emoji}`}
-                  type="button"
-                  onClick={() => sendReaction(rx.emoji, rx.label)}
-                  className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/40 hover:bg-rose-900/60 border border-pink-400/25 active:scale-95 transition-all"
-                >
-                  <span className="text-2xl sm:text-3xl filter drop-shadow">{rx.emoji}</span>
-                  <span className="text-[10px] font-bold text-pink-100 mt-1 truncate max-w-full">
-                    {rx.label}
-                  </span>
-                  <span className="text-[9px] font-mono text-pink-300/70">{count}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Recent Audience Hot Takes Feed Toggle */}
-        <div className="p-4 rounded-3xl bg-[#2b0309]/90 border border-pink-300/25">
-          <button
-            type="button"
-            onClick={() => setShowHotTakesFeed(!showHotTakesFeed)}
-            className="w-full flex items-center justify-between text-xs font-bold text-pink-200 font-mono uppercase tracking-wider"
-          >
-            <span className="flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-rose-400" />
-              <span>Audience Hot Takes Feed ({state.hotTakes.length})</span>
-            </span>
-            {showHotTakesFeed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          {showHotTakesFeed && (
-            <div className="mt-3 space-y-2 max-h-64 overflow-y-auto pr-1">
-              {state.hotTakes.length === 0 ? (
-                <p className="text-xs text-pink-300/60 italic text-center py-4">
-                  No audience hot takes yet. Be the first to vote and comment!
-                </p>
-              ) : (
-                state.hotTakes.map((take) => (
-                  <div
-                    key={take.id}
-                    className="p-2.5 rounded-xl bg-black/40 border border-pink-400/15 text-xs text-pink-100"
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-bold text-white text-xs">{take.voterName}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950 text-pink-200 border border-pink-400/30">
-                        🌶️ {take.spiceLevel}/5
-                      </span>
-                    </div>
-                    <p className="text-pink-100 italic leading-relaxed">
-                      "{take.hotTake}"
-                    </p>
-                    <div className="mt-1 text-[10px] text-pink-300/70 font-mono">
-                      Voted for: <span className="text-pink-100 font-bold">{take.optionLabel}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
 
         {/* Anonymous Confessions Wall */}
         <div className="p-4 rounded-3xl bg-[#2b0309]/90 border border-purple-300/25">

@@ -337,6 +337,7 @@ const state = {
     '🍿': 276,
     '💖': 512,
   } as Record<string, number>,
+  featuredConfessionId: null as string | null,
 };
 
 // Batching buffer for 500-spectator reaction bursts
@@ -996,12 +997,44 @@ async function startServer() {
     }
     const wasApproved = confession.status === 'approved';
     confession.status = 'rejected';
+    // A rejected/pulled confession can never stay spotlighted on the big screen
+    if (state.featuredConfessionId === confession.id) {
+      state.featuredConfessionId = null;
+    }
     if (wasApproved) {
       broadcast({
         type: 'CONFESSIONS_UPDATED',
-        payload: { confessions: getPublicConfessions() },
+        payload: { confessions: getPublicConfessions(), featuredConfessionId: state.featuredConfessionId },
       });
     }
+    return res.json({ success: true });
+  });
+
+  // Launch a confession to the Stage Screen as a full-screen spotlight
+  // moment. Only an already-approved confession can be launched — this
+  // endpoint never bypasses moderation.
+  app.post('/api/host/confessions/:id/launch', requireAdmin, (req, res) => {
+    const confession = confessions.find((c) => c.id === req.params.id);
+    if (!confession) {
+      return res.status(404).json({ error: 'Confession not found' });
+    }
+    if (confession.status !== 'approved') {
+      return res.status(400).json({ error: 'Only approved confessions can be launched to the big screen' });
+    }
+    state.featuredConfessionId = confession.id;
+    broadcast({
+      type: 'CONFESSIONS_UPDATED',
+      payload: { confessions: getPublicConfessions(), featuredConfessionId: state.featuredConfessionId },
+    });
+    return res.json({ success: true });
+  });
+
+  app.post('/api/host/confessions/clear-launch', requireAdmin, (req, res) => {
+    state.featuredConfessionId = null;
+    broadcast({
+      type: 'CONFESSIONS_UPDATED',
+      payload: { confessions: getPublicConfessions(), featuredConfessionId: null },
+    });
     return res.json({ success: true });
   });
 

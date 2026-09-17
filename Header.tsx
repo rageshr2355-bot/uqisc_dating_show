@@ -9,11 +9,9 @@ import {
   VolumeX, 
   Users, 
   Sparkles, 
-  Edit3, 
   Check, 
   Radio,
   Heart,
-  Plus,
   QrCode,
   Globe,
   Copy,
@@ -26,13 +24,11 @@ export function Header() {
     activeView, 
     setActiveView, 
     voterName, 
-    setVoterName, 
     soundEnabled, 
     setSoundEnabled, 
     state,
     isConnected,
     isAdmin,
-    setIsCreateQuestionOpen,
     setIsConfessionModalOpen,
     setIsQrModalOpen,
     publicWebsiteUrl,
@@ -40,16 +36,6 @@ export function Header() {
   } = usePollContext();
 
   const [copiedSite, setCopiedSite] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(voterName);
-
-  const handleNameSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (nameInput.trim()) {
-      setVoterName(nameInput.trim());
-      setIsEditingName(false);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-rose-800/50 bg-[#4c0519]/95 backdrop-blur-xl shadow-xl">
@@ -188,18 +174,6 @@ export function Header() {
             <span className="hidden sm:inline">Confessions</span>
           </button>
 
-          {/* Add Question Button */}
-          <button
-            id="header-btn-add-question"
-            onClick={() => setIsCreateQuestionOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition-all"
-            title="Add a new live question or dilemma to the show"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">+ Add Question</span>
-            <span className="sm:hidden">+ Question</span>
-          </button>
-
           {/* Sound FX Toggle */}
           <button
             id="toggle-sound-btn"
@@ -214,42 +188,13 @@ export function Header() {
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
-          {/* Voter Screen Name */}
+          {/* Voter Screen Name — random per-device, never editable */}
           <div className="flex items-center">
-            {isEditingName ? (
-              <form onSubmit={handleNameSave} className="flex items-center gap-1">
-                <input
-                  id="input-voter-name"
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  maxLength={20}
-                  className="bg-[#2a040b] text-xs text-white px-2.5 py-1 rounded-lg border border-pink-400 focus:outline-none focus:ring-1 focus:ring-pink-300 w-32"
-                  placeholder="Your Name"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  className="p-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                </button>
-              </form>
-            ) : (
-              <button
-                id="btn-edit-voter-name"
-                onClick={() => {
-                  setNameInput(voterName);
-                  setIsEditingName(true);
-                }}
-                className="group flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#30030a]/90 border border-pink-400/25 hover:border-pink-300 text-xs transition-all shadow-sm"
-              >
-                <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
-                <span className="text-pink-200/80">Voting:</span>
-                <span className="font-bold text-pink-100 max-w-[110px] truncate">{voterName}</span>
-                <Edit3 className="w-3 h-3 text-pink-400/60 group-hover:text-pink-200 transition-colors" />
-              </button>
-            )}
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#30030a]/90 border border-pink-400/25 text-xs shadow-sm">
+              <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
+              <span className="text-pink-200/80">Voting:</span>
+              <span className="font-bold text-pink-100 max-w-[110px] truncate">{voterName}</span>
+            </div>
           </div>
         </div>
       </div>

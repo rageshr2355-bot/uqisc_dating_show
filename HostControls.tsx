@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { usePollContext } from './PollContext';
-import { PollCategory } from './types';
 import { LaceCornerDecoration } from './JabWeMatchedBrand';
 import { 
   Sliders, 
@@ -8,7 +7,6 @@ import {
   Unlock, 
   Trophy, 
   RotateCcw, 
-  Plus, 
   Trash2, 
   Radio, 
   Volume2, 
@@ -44,9 +42,7 @@ export function HostControls() {
     resetPollVotes, 
     simulateSpectators, 
     triggerSound, 
-    createNewPoll,
     deletePoll,
-    setIsCreateQuestionOpen,
     openEditModal,
     removePfps,
     isQrModalOpen,
@@ -56,10 +52,25 @@ export function HostControls() {
     setShowStageCornerQr,
     pendingConfessions,
     approveConfession,
-    rejectConfession
+    rejectConfession,
+    launchConfession,
+    clearFeaturedConfession
   } = usePollContext();
 
   const [moderatingId, setModeratingId] = useState<string | null>(null);
+  const [isLaunching, setIsLaunching] = useState(false);
+
+  const handleLaunchConfession = async (id: string) => {
+    setIsLaunching(true);
+    await launchConfession(id);
+    setIsLaunching(false);
+  };
+
+  const handleClearFeatured = async () => {
+    setIsLaunching(true);
+    await clearFeaturedConfession();
+    setIsLaunching(false);
+  };
 
   const handleApproveConfession = async (id: string) => {
     setModeratingId(id);
@@ -196,17 +207,6 @@ export function HostControls() {
               Manage live auditorium ballots, lock/unseal the red envelope, and monitor 500 spectator connections.
             </p>
           </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              id="btn-open-create-poll-modal"
-              onClick={() => setIsCreateQuestionOpen(true)}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-rose-950/60 transition-all hover:scale-105 active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ New Live Question</span>
-            </button>
-          </div>
         </div>
 
         {/* Anonymous Confessions Moderation Queue */}
@@ -269,26 +269,62 @@ export function HostControls() {
 
           {pendingConfessions.filter((c) => c.status === 'approved').length > 0 && (
             <div className="mt-4 pt-4 border-t border-purple-400/20">
-              <p className="text-[11px] font-bold text-purple-200/80 uppercase tracking-wider mb-2">
-                Live now — tap to pull down
-              </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-bold text-purple-200/80 uppercase tracking-wider">
+                  Live on audience feed — launch one to the big screen
+                </p>
+                {state.featuredConfessionId && (
+                  <button
+                    onClick={handleClearFeatured}
+                    disabled={isLaunching}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-900 hover:bg-red-800 border border-red-400/40 text-[11px] text-white font-bold transition-colors disabled:opacity-50"
+                  >
+                    <X className="w-3 h-3" />
+                    <span>Clear Big Screen</span>
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
                 {pendingConfessions
                   .filter((c) => c.status === 'approved')
                   .slice(-20)
                   .reverse()
-                  .map((confession) => (
-                    <button
-                      key={confession.id}
-                      onClick={() => handleRejectConfession(confession.id)}
-                      disabled={moderatingId === confession.id}
-                      title="Click to remove from the live feed"
-                      className="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-400/30 text-[11px] text-emerald-100 hover:bg-red-950/60 hover:border-red-400/40 transition-colors disabled:opacity-50"
-                    >
-                      <span className="max-w-[220px] truncate italic">"{confession.text}"</span>
-                      <X className="w-3 h-3 opacity-0 group-hover:opacity-100 text-red-300" />
-                    </button>
-                  ))}
+                  .map((confession) => {
+                    const isFeatured = state.featuredConfessionId === confession.id;
+                    return (
+                      <div
+                        key={confession.id}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[11px] transition-colors ${
+                          isFeatured
+                            ? 'bg-purple-900/60 border-purple-300 shadow-md shadow-purple-950/60'
+                            : 'bg-emerald-950/60 border-emerald-400/30'
+                        }`}
+                      >
+                        <span className="flex-1 truncate italic text-emerald-50">"{confession.text}"</span>
+                        {isFeatured && (
+                          <span className="flex-shrink-0 px-1.5 py-0.5 rounded bg-purple-500 text-white text-[10px] font-black uppercase">
+                            On Screen
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleLaunchConfession(confession.id)}
+                          disabled={isLaunching || isFeatured}
+                          title="Launch to the stage big screen"
+                          className="flex-shrink-0 p-1.5 rounded-lg bg-purple-700 hover:bg-purple-600 border border-purple-300/50 text-white transition-colors disabled:opacity-40"
+                        >
+                          <Tv className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleRejectConfession(confession.id)}
+                          disabled={moderatingId === confession.id}
+                          title="Pull down from the live feed"
+                          className="flex-shrink-0 p-1.5 rounded-lg bg-red-900 hover:bg-red-800 border border-red-400/40 text-white transition-colors disabled:opacity-50"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
@@ -615,15 +651,6 @@ export function HostControls() {
                   <span>{isResettingPollId === 'all' ? 'Resetting All...' : 'Reset All Show Votes'}</span>
                 </button>
               )}
-
-              <button
-                id="btn-add-question-from-list"
-                onClick={() => setIsCreateQuestionOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-bold transition-all shadow-md"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Add Question</span>
-              </button>
             </div>
           </div>
 

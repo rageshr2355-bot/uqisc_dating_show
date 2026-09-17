@@ -52,8 +52,7 @@
 
 /* High-fidelity SVG Moroccan Quatrefoil Pattern */
 .bg-quatrefoil {
-  background-color: #7f0d1b;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23f472b6' fill-opacity='0.22'%3E%3Cpath d='M40 0 C44 14 54 14 60 20 C66 26 66 36 80 40 C66 44 66 54 60 60 C54 66 44 66 40 80 C36 66 26 66 20 60 C14 54 14 44 0 40 C14 36 14 26 20 20 C26 14 36 14 40 0 Z'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(0, 0)'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(80, 0)'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(0, 80)'/%3E%3Cpath d='M0 0 C4 7 9 7 10 10 C11 13 11 18 20 20 C11 22 11 27 10 30 C9 33 4 33 0 40 C-4 33 -9 33 -10 30 C-11 27 -11 22 -20 20 C-11 18 -11 13 -10 10 C-9 7 -4 7 0 0 Z' transform='translate(80, 80)'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: #f472b6;
 }
 
 /* Romantic Lace Border Inset Frame */

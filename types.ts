@@ -82,6 +82,7 @@ export interface AppState {
   reactionCounts: Record<string, number>;
   connectedAudienceCount: number;
   confessions: Confession[];
+  featuredConfessionId: string | null;
 }
 
 export interface CreateOptionPayload {

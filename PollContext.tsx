@@ -63,6 +63,8 @@ interface PollContextType {
   refreshPendingConfessions: () => Promise<void>;
   approveConfession: (id: string) => Promise<boolean>;
   rejectConfession: (id: string) => Promise<boolean>;
+  launchConfession: (id: string) => Promise<boolean>;
+  clearFeaturedConfession: () => Promise<boolean>;
 }
 
 const PollContext = createContext<PollContextType | undefined>(undefined);
@@ -82,6 +84,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     },
     connectedAudienceCount: 1,
     confessions: [],
+    featuredConfessionId: null,
   });
 
   // Initialize view from URL if provided (e.g. ?view=audience, ?view=stage, ?view=host or paths /stage, /host)
@@ -344,6 +347,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
           reactionCounts: data.reactionCounts || prev.reactionCounts,
           connectedAudienceCount: data.connectedAudienceCount || prev.connectedAudienceCount,
           confessions: data.confessions || prev.confessions,
+          featuredConfessionId: data.featuredConfessionId !== undefined ? data.featuredConfessionId : prev.featuredConfessionId,
         }));
       }
     } catch {
@@ -378,7 +382,14 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
             } else if (data.type === 'AUDIENCE_COUNT_UPDATED') {
               setState((prev) => ({ ...prev, connectedAudienceCount: data.payload.count }));
             } else if (data.type === 'CONFESSIONS_UPDATED') {
-              setState((prev) => ({ ...prev, confessions: data.payload.confessions }));
+              setState((prev) => ({
+                ...prev,
+                confessions: data.payload.confessions,
+                featuredConfessionId:
+                  data.payload.featuredConfessionId !== undefined
+                    ? data.payload.featuredConfessionId
+                    : prev.featuredConfessionId,
+              }));
             } else if (data.type === 'VOTE_RECORDED') {
               const { pollId, poll, newHotTake } = data.payload;
               setState((prev) => ({
@@ -673,6 +684,32 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
       return false;
+    } catch {
+      return false;
+    }
+  };
+
+  // Spotlight an already-approved confession full-screen on the Stage
+  // Screen. The server enforces that only approved confessions qualify.
+  const launchConfession = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/host/confessions/${id}/launch`, {
+        method: 'POST',
+        headers: withAdminHeaders(),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const clearFeaturedConfession = async (): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/host/confessions/clear-launch', {
+        method: 'POST',
+        headers: withAdminHeaders(),
+      });
+      return res.ok;
     } catch {
       return false;
     }
@@ -1007,6 +1044,8 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
         refreshPendingConfessions,
         approveConfession,
         rejectConfession,
+        launchConfession,
+        clearFeaturedConfession,
       }}
     >
       {children}
