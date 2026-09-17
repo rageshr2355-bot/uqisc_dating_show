@@ -83,6 +83,8 @@ export interface AppState {
   connectedAudienceCount: number;
   confessions: Confession[];
   featuredConfessionId: string | null;
+  confessionsBoardActive: boolean;
+  waitingScreenActive: boolean;
 }
 
 export interface CreateOptionPayload {

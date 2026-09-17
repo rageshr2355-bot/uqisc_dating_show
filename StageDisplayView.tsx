@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePollContext } from './PollContext';
 import { LaceCornerDecoration } from './JabWeMatchedBrand';
 import { 
@@ -38,6 +38,18 @@ export function StageDisplayView() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isResettingStage, setIsResettingStage] = useState(false);
 
+  const confessionListRef = useRef<HTMLDivElement>(null);
+  const confessionItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    if (state.confessionsBoardActive && state.featuredConfessionId) {
+      const el = confessionItemRefs.current[state.featuredConfessionId];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [state.featuredConfessionId, state.confessionsBoardActive]);
+
   if (!activePoll) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center text-pink-200">
@@ -71,28 +83,44 @@ export function StageDisplayView() {
 
   return (
     <div className="relative min-h-[90vh] flex flex-col justify-between p-4 sm:p-8 bg-quatrefoil overflow-hidden text-pink-50">
-      {/* Full-Screen Anonymous Confession Spotlight — takes over the stage
-          screen when the host launches one. Only ever an already-approved
-          confession; see the launch endpoint on the server. */}
-      {state.featuredConfessionId && (() => {
-        const featured = state.confessions.find((c) => c.id === state.featuredConfessionId);
-        if (!featured) return null;
-        return (
-          <div className="absolute inset-0 z-50 flex items-center justify-center p-8 sm:p-16 bg-black/90 backdrop-blur-md animate-in fade-in zoom-in-95 duration-300">
-            <div className="relative max-w-4xl w-full text-center">
-              <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-purple-100 border-4 border-white shadow-2xl flex items-center justify-center mb-6 sm:mb-8 animate-pulse-glow">
-                <Mail className="w-10 h-10 sm:w-12 sm:h-12 text-purple-700" />
-              </div>
-              <div className="text-sm sm:text-base font-script text-purple-200 tracking-widest mb-3 sm:mb-4">
-                an anonymous confession from the crowd
-              </div>
-              <p className="text-2xl sm:text-4xl lg:text-5xl font-bold italic text-white leading-snug drop-shadow-2xl">
-                "{featured.text}"
-              </p>
+      {/* Anonymous Confessions Board — a bounded, scrollable panel (not a
+          full-screen takeover) that the host can open and navigate through
+          confession by confession from the Host Console. */}
+      {state.confessionsBoardActive && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-6 sm:p-12 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="relative w-full max-w-3xl max-h-[75vh] flex flex-col rounded-3xl bg-gradient-to-b from-[#3a0a4a] via-[#2e0838] to-[#1e0522] border-2 border-purple-300/70 shadow-2xl overflow-hidden">
+            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-4 border-b border-purple-400/25 bg-black/30">
+              <Mail className="w-5 h-5 text-purple-300" />
+              <h3 className="font-black font-matched text-purple-100 uppercase tracking-wider text-sm sm:text-base">
+                Anonymous Confessions
+              </h3>
+            </div>
+
+            <div ref={confessionListRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+              {state.confessions.length === 0 ? (
+                <p className="text-center text-purple-300/60 italic py-8">No confessions yet.</p>
+              ) : (
+                [...state.confessions].reverse().map((confession) => {
+                  const isFocused = confession.id === state.featuredConfessionId;
+                  return (
+                    <div
+                      key={confession.id}
+                      ref={(el) => (confessionItemRefs.current[confession.id] = el)}
+                      className={`p-4 rounded-2xl border text-lg sm:text-xl italic leading-snug transition-all ${
+                        isFocused
+                          ? 'bg-purple-900/70 border-purple-300 shadow-lg shadow-purple-950/50 text-white scale-[1.02]'
+                          : 'bg-black/40 border-purple-400/20 text-purple-100/90'
+                      }`}
+                    >
+                      "{confession.text}"
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {/* Delicate white lace corner embroidery from the poster */}
       <LaceCornerDecoration position="top-left" />

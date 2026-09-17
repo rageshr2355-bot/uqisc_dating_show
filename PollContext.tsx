@@ -65,6 +65,7 @@ interface PollContextType {
   rejectConfession: (id: string) => Promise<boolean>;
   launchConfession: (id: string) => Promise<boolean>;
   clearFeaturedConfession: () => Promise<boolean>;
+  setWaitingScreen: (active: boolean) => Promise<boolean>;
 }
 
 const PollContext = createContext<PollContextType | undefined>(undefined);
@@ -85,6 +86,8 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     connectedAudienceCount: 1,
     confessions: [],
     featuredConfessionId: null,
+    confessionsBoardActive: false,
+    waitingScreenActive: false,
   });
 
   // Initialize view from URL if provided (e.g. ?view=audience, ?view=stage, ?view=host or paths /stage, /host)
@@ -348,6 +351,8 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
           connectedAudienceCount: data.connectedAudienceCount || prev.connectedAudienceCount,
           confessions: data.confessions || prev.confessions,
           featuredConfessionId: data.featuredConfessionId !== undefined ? data.featuredConfessionId : prev.featuredConfessionId,
+          confessionsBoardActive: data.confessionsBoardActive !== undefined ? data.confessionsBoardActive : prev.confessionsBoardActive,
+          waitingScreenActive: data.waitingScreenActive !== undefined ? data.waitingScreenActive : prev.waitingScreenActive,
         }));
       }
     } catch {
@@ -389,7 +394,13 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
                   data.payload.featuredConfessionId !== undefined
                     ? data.payload.featuredConfessionId
                     : prev.featuredConfessionId,
+                confessionsBoardActive:
+                  data.payload.confessionsBoardActive !== undefined
+                    ? data.payload.confessionsBoardActive
+                    : prev.confessionsBoardActive,
               }));
+            } else if (data.type === 'WAITING_SCREEN_CHANGED') {
+              setState((prev) => ({ ...prev, waitingScreenActive: data.payload.waitingScreenActive }));
             } else if (data.type === 'VOTE_RECORDED') {
               const { pollId, poll, newHotTake } = data.payload;
               setState((prev) => ({
@@ -708,6 +719,20 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/host/confessions/clear-launch', {
         method: 'POST',
         headers: withAdminHeaders(),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  // Host-controlled waiting screen for the Audience Pad
+  const setWaitingScreen = async (active: boolean): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/host/waiting-screen', {
+        method: 'POST',
+        headers: withAdminHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ active }),
       });
       return res.ok;
     } catch {
@@ -1046,6 +1071,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
         rejectConfession,
         launchConfession,
         clearFeaturedConfession,
+        setWaitingScreen,
       }}
     >
       {children}

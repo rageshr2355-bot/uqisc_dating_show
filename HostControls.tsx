@@ -29,7 +29,10 @@ import {
   Tv,
   Smartphone,
   Download,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Clock
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -54,11 +57,19 @@ export function HostControls() {
     approveConfession,
     rejectConfession,
     launchConfession,
-    clearFeaturedConfession
+    clearFeaturedConfession,
+    setWaitingScreen
   } = usePollContext();
 
   const [moderatingId, setModeratingId] = useState<string | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
+  const [isTogglingWaiting, setIsTogglingWaiting] = useState(false);
+
+  const handleToggleWaitingScreen = async () => {
+    setIsTogglingWaiting(true);
+    await setWaitingScreen(!state.waitingScreenActive);
+    setIsTogglingWaiting(false);
+  };
 
   const handleLaunchConfession = async (id: string) => {
     setIsLaunching(true);
@@ -207,6 +218,20 @@ export function HostControls() {
               Manage live auditorium ballots, lock/unseal the red envelope, and monitor 500 spectator connections.
             </p>
           </div>
+
+          <button
+            onClick={handleToggleWaitingScreen}
+            disabled={isTogglingWaiting}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider shadow-md transition-all disabled:opacity-50 ${
+              state.waitingScreenActive
+                ? 'bg-amber-500 hover:bg-amber-400 border-white text-black'
+                : 'bg-black/40 hover:bg-black/60 border-pink-400/40 text-pink-200 hover:text-white'
+            }`}
+            title="Show a waiting screen on the Audience Pad instead of the live ballot"
+          >
+            <Clock className="w-4 h-4" />
+            <span>{state.waitingScreenActive ? 'Waiting Screen ON — Click to Hide' : 'Show Waiting Screen'}</span>
+          </button>
         </div>
 
         {/* Anonymous Confessions Moderation Queue */}
@@ -269,19 +294,56 @@ export function HostControls() {
 
           {pendingConfessions.filter((c) => c.status === 'approved').length > 0 && (
             <div className="mt-4 pt-4 border-t border-purple-400/20">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <p className="text-[11px] font-bold text-purple-200/80 uppercase tracking-wider">
                   Live on audience feed — launch one to the big screen
                 </p>
-                {state.featuredConfessionId && (
-                  <button
-                    onClick={handleClearFeatured}
-                    disabled={isLaunching}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-900 hover:bg-red-800 border border-red-400/40 text-[11px] text-white font-bold transition-colors disabled:opacity-50"
-                  >
-                    <X className="w-3 h-3" />
-                    <span>Clear Big Screen</span>
-                  </button>
+                {state.confessionsBoardActive && (
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const approvedList = pendingConfessions
+                        .filter((c) => c.status === 'approved')
+                        .slice(-20)
+                        .reverse();
+                      const currentIndex = approvedList.findIndex((c) => c.id === state.featuredConfessionId);
+                      const goTo = (delta: number) => {
+                        if (currentIndex === -1 || approvedList.length === 0) return;
+                        const nextIndex = (currentIndex + delta + approvedList.length) % approvedList.length;
+                        handleLaunchConfession(approvedList[nextIndex].id);
+                      };
+                      return (
+                        <>
+                          <button
+                            onClick={() => goTo(-1)}
+                            disabled={isLaunching || currentIndex === -1}
+                            className="p-1.5 rounded-lg bg-purple-800 hover:bg-purple-700 border border-purple-300/40 text-white transition-colors disabled:opacity-40"
+                            title="Previous confession"
+                          >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="text-[11px] font-mono text-purple-200/80 min-w-[40px] text-center">
+                            {currentIndex === -1 ? '—' : `${currentIndex + 1}/${approvedList.length}`}
+                          </span>
+                          <button
+                            onClick={() => goTo(1)}
+                            disabled={isLaunching || currentIndex === -1}
+                            className="p-1.5 rounded-lg bg-purple-800 hover:bg-purple-700 border border-purple-300/40 text-white transition-colors disabled:opacity-40"
+                            title="Next confession"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      );
+                    })()}
+                    <button
+                      onClick={handleClearFeatured}
+                      disabled={isLaunching}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-900 hover:bg-red-800 border border-red-400/40 text-[11px] text-white font-bold transition-colors disabled:opacity-50"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Close Board</span>
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="flex flex-col gap-2">
