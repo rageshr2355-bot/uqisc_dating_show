@@ -398,6 +398,31 @@ export function StageDisplayView() {
           </div>
         </div>
       </div>
+
+      {/* Anonymous Confessions Wall — only ever shows host-approved entries */}
+      {state.confessions.length > 0 && (
+        <div className="relative z-10 pt-4 mt-4 border-t border-purple-300/20">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-purple-950/90 border border-purple-400/50 text-purple-200 text-xs font-black font-mono tracking-wider uppercase">
+              <Mail className="w-3.5 h-3.5 text-purple-300" />
+              <span>Anonymous Confessions</span>
+            </div>
+
+            <div className="overflow-hidden whitespace-nowrap w-full">
+              <div className="animate-marquee flex items-center gap-6 text-sm">
+                {state.confessions.slice(-15).reverse().map((confession) => (
+                  <div
+                    key={confession.id}
+                    className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-black/40 border border-purple-400/25 text-purple-50"
+                  >
+                    <span className="text-slate-100 italic text-xs">"{confession.text}"</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

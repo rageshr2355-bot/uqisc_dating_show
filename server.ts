@@ -297,6 +297,33 @@ const INITIAL_HOT_TAKES: AudienceHotTake[] = [
   },
 ];
 
+// Anonymous Confessions — held OUTSIDE `state` on purpose. `state` gets
+// spread wholesale into every broadcast and into GET /api/state, which every
+// connected client (including anonymous audience members) receives — so
+// anything unmoderated must never live there. Confessions start 'pending'
+// and only become visible to the public once a host approves them; the host
+// console fetches the full pending/approved/rejected list separately over an
+// admin-authenticated endpoint, never over the public broadcast.
+interface Confession {
+  id: string;
+  text: string;
+  createdAt: number;
+  status: 'pending' | 'approved' | 'rejected';
+}
+let confessions: Confession[] = [];
+const MAX_STORED_CONFESSIONS = 500; // cap memory growth over a long event
+const MAX_PUBLIC_CONFESSIONS = 60; // cap what's ever sent to the public feed
+
+function getPublicConfessions() {
+  return confessions
+    .filter((c) => c.status === 'approved')
+    .slice(-MAX_PUBLIC_CONFESSIONS);
+}
+
+function publicState() {
+  return { ...state, confessions: getPublicConfessions() };
+}
+
 // App Server State
 const state = {
   polls: JSON.parse(JSON.stringify(INITIAL_POLLS)) as PollQuestion[],
@@ -416,7 +443,7 @@ async function startServer() {
     const initMessage = JSON.stringify({
       type: 'INIT_STATE',
       payload: {
-        ...state,
+        ...publicState(),
         connectedAudienceCount: getConnectedCount(),
       },
     });
@@ -504,7 +531,7 @@ async function startServer() {
 
   app.get('/api/state', (req, res) => {
     res.json({
-      ...state,
+      ...publicState(),
       connectedAudienceCount: getConnectedCount(),
     });
   });
@@ -910,7 +937,75 @@ async function startServer() {
     return res.json({ success: true });
   });
 
-  // Host Controls: Switch Active Poll
+  // Anonymous Confessions — public submission (no name, no login).
+  // Lands as 'pending' and is invisible to everyone until a host approves
+  // it (see the requireAdmin endpoints below) — see the comment above the
+  // `confessions` store for why this never touches the public `state`.
+  app.post('/api/confessions', (req, res) => {
+    const { text } = req.body as { text?: string };
+    const trimmed = (text || '').trim();
+
+    if (!trimmed) {
+      return res.status(400).json({ error: 'Confession text is required' });
+    }
+    if (trimmed.length > 300) {
+      return res.status(400).json({ error: 'Keep it under 300 characters' });
+    }
+
+    const confession: Confession = {
+      id: `conf-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+      text: trimmed,
+      createdAt: Date.now(),
+      status: 'pending',
+    };
+    confessions.push(confession);
+    if (confessions.length > MAX_STORED_CONFESSIONS) {
+      confessions = confessions.slice(-MAX_STORED_CONFESSIONS);
+    }
+
+    // Deliberately NOT broadcast to the public socket — it's only visible
+    // to the host, who polls GET /api/host/confessions to review it.
+    return res.json({ success: true });
+  });
+
+  // Host moderation queue — the ONLY place pending/rejected confession text
+  // is ever transmitted, and only over an admin-authenticated request.
+  app.get('/api/host/confessions', requireAdmin, (req, res) => {
+    return res.json({ confessions: [...confessions].sort((a, b) => b.createdAt - a.createdAt) });
+  });
+
+  app.post('/api/host/confessions/:id/approve', requireAdmin, (req, res) => {
+    const confession = confessions.find((c) => c.id === req.params.id);
+    if (!confession) {
+      return res.status(404).json({ error: 'Confession not found' });
+    }
+    confession.status = 'approved';
+    broadcast({
+      type: 'CONFESSIONS_UPDATED',
+      payload: { confessions: getPublicConfessions() },
+    });
+    return res.json({ success: true });
+  });
+
+  // Reject also doubles as an instant "pull down" for anything already
+  // approved that needs to come off the live feed immediately.
+  app.post('/api/host/confessions/:id/reject', requireAdmin, (req, res) => {
+    const confession = confessions.find((c) => c.id === req.params.id);
+    if (!confession) {
+      return res.status(404).json({ error: 'Confession not found' });
+    }
+    const wasApproved = confession.status === 'approved';
+    confession.status = 'rejected';
+    if (wasApproved) {
+      broadcast({
+        type: 'CONFESSIONS_UPDATED',
+        payload: { confessions: getPublicConfessions() },
+      });
+    }
+    return res.json({ success: true });
+  });
+
+
   app.post('/api/host/active-poll', requireAdmin, (req, res) => {
     const { pollId } = req.body as { pollId: string };
     const poll = state.polls.find((p) => p.id === pollId);

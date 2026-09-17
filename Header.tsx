@@ -17,7 +17,8 @@ import {
   QrCode,
   Globe,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Mail
 } from 'lucide-react';
 
 export function Header() {
@@ -32,6 +33,7 @@ export function Header() {
     isConnected,
     isAdmin,
     setIsCreateQuestionOpen,
+    setIsConfessionModalOpen,
     setIsQrModalOpen,
     publicWebsiteUrl,
     joinUrl
@@ -173,6 +175,17 @@ export function Header() {
           >
             <QrCode className="w-3.5 h-3.5 text-pink-300" />
             <span className="hidden sm:inline">Join QR</span>
+          </button>
+
+          {/* Anonymous Confession Button — visible to everyone, no admin needed */}
+          <button
+            id="header-btn-confessions"
+            onClick={() => setIsConfessionModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 hover:bg-black/70 border border-pink-400/40 text-pink-200 hover:text-white text-xs font-bold transition-all shadow-sm hover:scale-105 active:scale-95"
+            title="Send an anonymous confession"
+          >
+            <Mail className="w-3.5 h-3.5 text-pink-300" />
+            <span className="hidden sm:inline">Confessions</span>
           </button>
 
           {/* Add Question Button */}

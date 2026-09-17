@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { AppState, PollQuestion, AudienceHotTake, ReactionBurst, UserVoteInput, CreateOptionPayload, CreatePollPayload, UpdatePollPayload } from './types';
+import { AppState, PollQuestion, AudienceHotTake, ReactionBurst, UserVoteInput, CreateOptionPayload, CreatePollPayload, UpdatePollPayload, Confession } from './types';
 import { INITIAL_POLLS, INITIAL_HOT_TAKES } from './initialPolls';
 import { sounds } from './audio';
 import confetti from 'canvas-confetti';
@@ -55,6 +55,14 @@ interface PollContextType {
   seedAudienceVotes: (pollId?: string) => Promise<void>;
   simulateSpectators: (count?: number) => Promise<void>;
   triggerSound: (type: 'heartbeat' | 'stinger' | 'fanfare' | 'chime' | 'buzzer') => void;
+  // Anonymous Confessions
+  isConfessionModalOpen: boolean;
+  setIsConfessionModalOpen: (open: boolean) => void;
+  submitConfession: (text: string) => Promise<boolean>;
+  pendingConfessions: Confession[];
+  refreshPendingConfessions: () => Promise<void>;
+  approveConfession: (id: string) => Promise<boolean>;
+  rejectConfession: (id: string) => Promise<boolean>;
 }
 
 const PollContext = createContext<PollContextType | undefined>(undefined);
@@ -73,6 +81,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
       '💖': 512,
     },
     connectedAudienceCount: 1,
+    confessions: [],
   });
 
   // Initialize view from URL if provided (e.g. ?view=audience, ?view=stage, ?view=host or paths /stage, /host)
@@ -187,6 +196,8 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
   const [soundEnabled, setSoundEnabledState] = useState<boolean>(true);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isCreateQuestionOpen, setIsCreateQuestionOpen] = useState<boolean>(false);
+  const [isConfessionModalOpen, setIsConfessionModalOpen] = useState<boolean>(false);
+  const [pendingConfessions, setPendingConfessions] = useState<Confession[]>([]);
   const [editingPoll, setEditingPoll] = useState<PollQuestion | null>(null);
   const [isEditQuestionOpen, setIsEditQuestionOpen] = useState<boolean>(false);
 
@@ -332,6 +343,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
           hotTakes: data.hotTakes || prev.hotTakes,
           reactionCounts: data.reactionCounts || prev.reactionCounts,
           connectedAudienceCount: data.connectedAudienceCount || prev.connectedAudienceCount,
+          confessions: data.confessions || prev.confessions,
         }));
       }
     } catch {
@@ -365,6 +377,8 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
               setState(data.payload);
             } else if (data.type === 'AUDIENCE_COUNT_UPDATED') {
               setState((prev) => ({ ...prev, connectedAudienceCount: data.payload.count }));
+            } else if (data.type === 'CONFESSIONS_UPDATED') {
+              setState((prev) => ({ ...prev, confessions: data.payload.confessions }));
             } else if (data.type === 'VOTE_RECORDED') {
               const { pollId, poll, newHotTake } = data.payload;
               setState((prev) => ({
@@ -598,7 +612,85 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Send live reaction emoji
+  // Submit an anonymous confession — public, no name attached. It lands in
+  // the host's moderation queue and never appears anywhere until approved.
+  const submitConfession = async (text: string): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/confessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.error('Failed to submit confession:', err);
+      return false;
+    }
+  };
+
+  // Host-only: pull the moderation queue (pending + approved + rejected).
+  // Polled rather than pushed over the public socket so pending/rejected
+  // text is never sent to non-admin clients.
+  const refreshPendingConfessions = useCallback(async (): Promise<void> => {
+    if (!adminToken) return;
+    try {
+      const res = await fetch('/api/host/confessions', {
+        headers: withAdminHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingConfessions(data.confessions || []);
+      }
+    } catch {
+      // ignore transient polling errors
+    }
+  }, [adminToken, withAdminHeaders]);
+
+  const approveConfession = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/host/confessions/${id}/approve`, {
+        method: 'POST',
+        headers: withAdminHeaders(),
+      });
+      if (res.ok) {
+        await refreshPendingConfessions();
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const rejectConfession = async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/host/confessions/${id}/reject`, {
+        method: 'POST',
+        headers: withAdminHeaders(),
+      });
+      if (res.ok) {
+        await refreshPendingConfessions();
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  // Keep the host's moderation queue fresh while they're logged in, so new
+  // confessions show up within a few seconds without needing a page reload.
+  useEffect(() => {
+    if (!isAdmin) {
+      setPendingConfessions([]);
+      return;
+    }
+    refreshPendingConfessions();
+    const interval = setInterval(refreshPendingConfessions, 4000);
+    return () => clearInterval(interval);
+  }, [isAdmin, refreshPendingConfessions]);
+
+
   const sendReaction = (emoji: string, label: string) => {
     sounds.playReactionPop();
     fetch('/api/reaction', {
@@ -908,6 +1000,13 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
         seedAudienceVotes,
         simulateSpectators,
         triggerSound,
+        isConfessionModalOpen,
+        setIsConfessionModalOpen,
+        submitConfession,
+        pendingConfessions,
+        refreshPendingConfessions,
+        approveConfession,
+        rejectConfession,
       }}
     >
       {children}

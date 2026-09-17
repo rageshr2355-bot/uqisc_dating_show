@@ -52,6 +52,7 @@ export function AudienceView() {
     state,
     switchActivePoll,
     setIsCreateQuestionOpen,
+    setIsConfessionModalOpen,
     setIsQrModalOpen,
     joinUrl,
     publicWebsiteUrl
@@ -103,6 +104,7 @@ export function AudienceView() {
 
   // Tab for hot takes feed vs ballot
   const [showHotTakesFeed, setShowHotTakesFeed] = useState(true);
+  const [showConfessionsFeed, setShowConfessionsFeed] = useState(true);
 
   if (!activePoll) {
     return (
@@ -720,6 +722,49 @@ export function AudienceView() {
               )}
             </div>
           )}
+        </div>
+
+        {/* Anonymous Confessions Wall */}
+        <div className="p-4 rounded-3xl bg-[#2b0309]/90 border border-purple-300/25">
+          <button
+            type="button"
+            onClick={() => setShowConfessionsFeed(!showConfessionsFeed)}
+            className="w-full flex items-center justify-between text-xs font-bold text-purple-200 font-mono uppercase tracking-wider"
+          >
+            <span className="flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-purple-300" />
+              <span>Anonymous Confessions ({state.confessions.length})</span>
+            </span>
+            {showConfessionsFeed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+
+          {showConfessionsFeed && (
+            <div className="mt-3 space-y-2 max-h-64 overflow-y-auto pr-1">
+              {state.confessions.length === 0 ? (
+                <p className="text-xs text-purple-300/60 italic text-center py-4">
+                  No confessions on the wall yet — be the first to send one anonymously.
+                </p>
+              ) : (
+                [...state.confessions].reverse().map((confession) => (
+                  <div
+                    key={confession.id}
+                    className="p-2.5 rounded-xl bg-black/40 border border-purple-400/15 text-xs text-purple-50"
+                  >
+                    <p className="italic leading-relaxed">"{confession.text}"</p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsConfessionModalOpen(true)}
+            className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 via-fuchsia-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 border border-white/80 text-white text-xs font-black uppercase tracking-wider shadow-md transition-all hover:scale-[1.01]"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>Send an Anonymous Confession</span>
+          </button>
         </div>
       </div>
 

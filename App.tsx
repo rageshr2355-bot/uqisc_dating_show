@@ -10,6 +10,7 @@ import { EditQuestionModal } from './EditQuestionModal';
 import { JoinQrCodeModal } from './JoinQrCodeModal';
 import { StageCornerQr } from './StageCornerQr';
 import { AdminGate } from './AdminGate';
+import { ConfessionModal } from './ConfessionModal';
 import { Heart, Tv, Smartphone, Sliders, LogOut } from 'lucide-react';
 
 function AppContent() {
@@ -50,6 +51,9 @@ function AppContent() {
 
       {/* Host Question & Text Edit Modal */}
       <EditQuestionModal />
+
+      {/* Anonymous Confession Submission (public, always mounted) */}
+      <ConfessionModal />
 
       {/* Main Top Bar with Jab We Matched Branding */}
       <Header />

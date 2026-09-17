@@ -30,7 +30,8 @@ import {
   ExternalLink,
   Tv,
   Smartphone,
-  Download
+  Download,
+  X
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -52,8 +53,25 @@ export function HostControls() {
     setIsQrModalOpen,
     joinUrl,
     showStageCornerQr,
-    setShowStageCornerQr
+    setShowStageCornerQr,
+    pendingConfessions,
+    approveConfession,
+    rejectConfession
   } = usePollContext();
+
+  const [moderatingId, setModeratingId] = useState<string | null>(null);
+
+  const handleApproveConfession = async (id: string) => {
+    setModeratingId(id);
+    await approveConfession(id);
+    setModeratingId(null);
+  };
+
+  const handleRejectConfession = async (id: string) => {
+    setModeratingId(id);
+    await rejectConfession(id);
+    setModeratingId(null);
+  };
 
   const [hostQrUrl, setHostQrUrl] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
@@ -189,6 +207,91 @@ export function HostControls() {
               <span>+ New Live Question</span>
             </button>
           </div>
+        </div>
+
+        {/* Anonymous Confessions Moderation Queue */}
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-[#3a0a4a] via-[#2e0838] via-40% to-[#3b040e] border-2 border-purple-300 shadow-xl">
+          <div className="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-purple-400/20">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-purple-300" />
+              <h3 className="font-bold text-white text-sm font-matched uppercase tracking-wider">
+                Confessions Moderation
+              </h3>
+              {pendingConfessions.filter((c) => c.status === 'pending').length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-black font-mono animate-pulse">
+                  {pendingConfessions.filter((c) => c.status === 'pending').length} WAITING
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-purple-200/70 hidden sm:block">
+              Nothing reaches the audience or stage until you approve it here.
+            </p>
+          </div>
+
+          {pendingConfessions.filter((c) => c.status === 'pending').length === 0 ? (
+            <p className="text-xs text-purple-300/60 italic text-center py-4">
+              No confessions waiting for review right now.
+            </p>
+          ) : (
+            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              {pendingConfessions
+                .filter((c) => c.status === 'pending')
+                .map((confession) => (
+                  <div
+                    key={confession.id}
+                    className="flex items-start gap-3 p-3 rounded-xl bg-black/40 border border-purple-400/25"
+                  >
+                    <p className="flex-1 text-sm text-purple-50 italic leading-relaxed">
+                      "{confession.text}"
+                    </p>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleApproveConfession(confession.id)}
+                        disabled={moderatingId === confession.id}
+                        className="p-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 border border-emerald-300/50 text-white transition-colors disabled:opacity-50"
+                        title="Approve — shows on audience feed & stage screen"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleRejectConfession(confession.id)}
+                        disabled={moderatingId === confession.id}
+                        className="p-2 rounded-lg bg-red-900 hover:bg-red-800 border border-red-400/40 text-white transition-colors disabled:opacity-50"
+                        title="Reject — never shown"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {pendingConfessions.filter((c) => c.status === 'approved').length > 0 && (
+            <div className="mt-4 pt-4 border-t border-purple-400/20">
+              <p className="text-[11px] font-bold text-purple-200/80 uppercase tracking-wider mb-2">
+                Live now — tap to pull down
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {pendingConfessions
+                  .filter((c) => c.status === 'approved')
+                  .slice(-20)
+                  .reverse()
+                  .map((confession) => (
+                    <button
+                      key={confession.id}
+                      onClick={() => handleRejectConfession(confession.id)}
+                      disabled={moderatingId === confession.id}
+                      title="Click to remove from the live feed"
+                      className="group flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-400/30 text-[11px] text-emerald-100 hover:bg-red-950/60 hover:border-red-400/40 transition-colors disabled:opacity-50"
+                    >
+                      <span className="max-w-[220px] truncate italic">"{confession.text}"</span>
+                      <X className="w-3 h-3 opacity-0 group-hover:opacity-100 text-red-300" />
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 500 Spectators High Scale Diagnostics & Stress Tester */}

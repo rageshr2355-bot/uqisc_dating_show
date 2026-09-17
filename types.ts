@@ -68,12 +68,20 @@ export interface ReactionBurst {
   x: number;
 }
 
+export interface Confession {
+  id: string;
+  text: string;
+  createdAt: number;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 export interface AppState {
   polls: PollQuestion[];
   activePollId: string;
   hotTakes: AudienceHotTake[];
   reactionCounts: Record<string, number>;
   connectedAudienceCount: number;
+  confessions: Confession[];
 }
 
 export interface CreateOptionPayload {
