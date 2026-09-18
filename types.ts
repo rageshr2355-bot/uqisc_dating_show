@@ -22,7 +22,7 @@ export interface UserVoteInput {
   hotTake?: string;
   customWriteIn?: string;
   spiceLevel?: number;
-  voterName: string;
+  voterName?: string;
 }
 
 export interface VoteRecord {
@@ -91,7 +91,7 @@ export interface CreateOptionPayload {
   pollId: string;
   label: string;
   description?: string;
-  createdBy: string;
+  createdBy?: string;
   tag?: string;
 }
 

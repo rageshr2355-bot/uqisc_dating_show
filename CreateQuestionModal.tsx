@@ -24,7 +24,6 @@ export function CreateQuestionModal() {
     isCreateQuestionOpen, 
     setIsCreateQuestionOpen, 
     createNewPoll, 
-    voterName,
     activeView
   } = usePollContext();
 
@@ -36,7 +35,7 @@ export function CreateQuestionModal() {
   const [newCategory, setNewCategory] = useState<PollCategory>('drama');
   const [newCategoryLabel, setNewCategoryLabel] = useState('🚩 RED FLAG OR BOLLYWOOD ROMANCE?');
   const [requiresInput, setRequiresInput] = useState(true);
-  const [inputPrompt, setInputPrompt] = useState('Spectator Hot Take Required: State your reasoning for this vote');
+  const [inputPrompt, setInputPrompt] = useState('Add a comment for the big screen');
   const [allowAudienceOptions, setAllowAudienceOptions] = useState(true);
 
   const [options, setOptions] = useState<
@@ -191,7 +190,7 @@ export function CreateQuestionModal() {
 
     const success = await createNewPoll({
       title: newTitle.trim(),
-      prompt: newPrompt.trim() || `Submitted live by spectator ${voterName}! Cast your official vote.`,
+      prompt: newPrompt.trim() || 'Cast your vote now.',
       category: newCategory,
       categoryLabel: newCategoryLabel,
       requiresVoterInput: requiresInput,
@@ -228,7 +227,7 @@ export function CreateQuestionModal() {
               <div className="text-[11px] font-script text-pink-200 tracking-wider">
                 uqisc presents • live audience stage interactive
               </div>
-              <h2 className="text-lg sm:text-xl font-black font-matched tracking-wider uppercase matched-3d-text">
+              <h2 className="text-lg sm:text-xl font-black font-display">
                 Add Live Show Question
               </h2>
             </div>
@@ -250,7 +249,7 @@ export function CreateQuestionModal() {
             id="tab-select-question-bank"
             type="button"
             onClick={() => setActiveTab('bank')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               activeTab === 'bank'
                 ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md border border-white'
                 : 'text-pink-300/70 hover:text-white hover:bg-black/30'
@@ -264,7 +263,7 @@ export function CreateQuestionModal() {
             id="tab-select-custom-builder"
             type="button"
             onClick={() => setActiveTab('custom')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-2 ${
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               activeTab === 'custom'
                 ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-md border border-white'
                 : 'text-pink-300/70 hover:text-white hover:bg-black/30'
@@ -279,7 +278,7 @@ export function CreateQuestionModal() {
         {activeTab === 'bank' && (
           <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto space-y-3">
             <p className="text-xs text-pink-200/90 font-medium">
-              Pick a ready-to-air Bollywood or speed-dating dilemma. You can broadcast it straight to the 700 spectators or customize its options:
+              Pick a ready-to-air Bollywood or speed-dating dilemma. You can broadcast it straight to the audience or customize its options:
             </p>
 
             <div className="grid grid-cols-1 gap-3">
@@ -290,10 +289,10 @@ export function CreateQuestionModal() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-950 text-pink-200 border border-pink-400/40 font-mono">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-950 text-pink-200 border border-pink-400/40">
                         {preset.categoryLabel}
                       </span>
-                      <span className="text-[11px] font-semibold text-pink-300 font-mono">
+                      <span className="text-[11px] font-semibold text-pink-300">
                         {preset.badge}
                       </span>
                     </div>
@@ -303,8 +302,8 @@ export function CreateQuestionModal() {
                     <p className="text-xs text-pink-200/80 line-clamp-1 mt-0.5">
                       {preset.prompt}
                     </p>
-                    <div className="text-[11px] text-pink-300/70 font-mono mt-1">
-                      {preset.options.length} Candidate Choices • Hot Take Required
+                    <div className="text-[11px] text-pink-300/70 mt-1">
+                      {preset.options.length} options
                     </div>
                   </div>
 
@@ -338,7 +337,7 @@ export function CreateQuestionModal() {
           <form onSubmit={handleSubmitCustom} className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto space-y-4">
             {/* Quick Templates Buttons */}
             <div>
-              <label className="block text-xs font-bold text-pink-200 mb-1.5 font-mono uppercase">
+              <label className="block text-xs font-bold text-pink-200 mb-1.5 uppercase">
                 Quick Option Formats:
               </label>
               <div className="flex items-center gap-2 flex-wrap">
@@ -368,7 +367,7 @@ export function CreateQuestionModal() {
 
             {/* Category */}
             <div>
-              <label className="block text-xs font-bold text-pink-200 mb-1 font-mono uppercase">
+              <label className="block text-xs font-bold text-pink-200 mb-1 uppercase">
                 Segment / Category:
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -377,7 +376,7 @@ export function CreateQuestionModal() {
                     key={cat}
                     type="button"
                     onClick={() => handleCategoryChange(cat)}
-                    className={`py-1.5 px-2.5 rounded-xl border text-[11px] font-bold font-mono transition-all text-center ${
+                    className={`py-1.5 px-2.5 rounded-xl border text-[11px] font-bold transition-all text-center ${
                       newCategory === cat
                         ? 'bg-white text-rose-950 border-white shadow-md'
                         : 'bg-black/30 border-pink-400/20 text-pink-200 hover:bg-black/50'
@@ -405,7 +404,7 @@ export function CreateQuestionModal() {
                 required
                 autoFocus
               />
-              <div className="text-[11px] text-pink-300/60 font-mono text-right mt-0.5">
+              <div className="text-[11px] text-pink-300/60 text-right mt-0.5">
                 {newTitle.length}/140 chars
               </div>
             </div>
@@ -413,14 +412,14 @@ export function CreateQuestionModal() {
             {/* Context / Prompt */}
             <div>
               <label className="block text-xs font-bold text-pink-200 mb-1">
-                Context / Instructions for Spectators:
+                Context / instructions:
               </label>
               <input
                 id="input-new-question-prompt"
                 type="text"
                 value={newPrompt}
                 onChange={(e) => setNewPrompt(e.target.value)}
-                placeholder="e.g. 700 spectators in the auditorium decide who unseals the grand prize date!"
+                placeholder="e.g. Who unseals the grand prize date?"
                 maxLength={200}
                 className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-pink-300/40 text-white placeholder-pink-300/40 text-xs focus:outline-none focus:ring-1 focus:ring-pink-300"
               />
@@ -428,7 +427,7 @@ export function CreateQuestionModal() {
 
             {/* Candidate Options Builder */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-pink-200 font-mono uppercase">
+              <div className="flex items-center justify-between text-xs font-bold text-pink-200 uppercase">
                 <span>Ballot Options ({options.length}/8):</span>
                 {options.length < 8 && (
                   <button
@@ -446,7 +445,7 @@ export function CreateQuestionModal() {
               {options.map((opt, idx) => (
                 <div key={idx} className="p-3 rounded-2xl bg-black/40 border border-pink-400/25 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-rose-800 border border-white text-white flex items-center justify-center text-[10px] font-mono font-bold flex-shrink-0">
+                    <span className="w-5 h-5 rounded-full bg-rose-800 border border-white text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                       {idx + 1}
                     </span>
                     <input
@@ -506,7 +505,7 @@ export function CreateQuestionModal() {
                   onChange={(e) => setRequiresInput(e.target.checked)}
                   className="rounded border-pink-300 text-rose-600 focus:ring-0"
                 />
-                <span>Require Spectators to Provide Spicy Hot Take / Reasoning</span>
+                <span>Show an optional comment box (comments appear on the stage ticker)</span>
               </label>
 
               <label className="flex items-center gap-2 text-xs font-bold text-pink-100 cursor-pointer">
@@ -516,7 +515,7 @@ export function CreateQuestionModal() {
                   onChange={(e) => setAllowAudienceOptions(e.target.checked)}
                   className="rounded border-pink-300 text-rose-600 focus:ring-0"
                 />
-                <span>Allow 700 Spectators to Nominate Additional Write-in Options Live</span>
+                <span>Let the audience nominate extra options</span>
               </label>
             </div>
 

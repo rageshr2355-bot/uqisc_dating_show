@@ -5,6 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer as createViteServer } from 'vite';
+import { containsProfanity, clampText, LIMITS } from './moderation';
 
 // ---------------------------------------------------------------------------
 // ADMIN ACCESS CONTROL
@@ -26,34 +27,6 @@ import { createServer as createViteServer } from 'vite';
 // trip on substrings). This is a practical blocklist for a live college
 // event, not an exhaustive or clever filter — the host's moderation queue
 // (for confessions) remains the real backstop.
-// ---------------------------------------------------------------------------
-const PROFANITY_LIST = [
-  'fuck', 'fucking', 'fucker', 'motherfucker',
-  'shit', 'bullshit', 'shitty',
-  'bitch', 'bitches',
-  'asshole', 'ass',
-  'bastard',
-  'cunt',
-  'dick', 'dickhead',
-  'piss', 'pissed',
-  'slut', 'whore',
-  'cock',
-  'twat',
-  'wanker',
-  'nigger', 'nigga',
-  'faggot', 'fag',
-  'retard', 'retarded',
-  'rape', 'rapist',
-];
-const PROFANITY_REGEX = new RegExp(
-  `\\b(${PROFANITY_LIST.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
-  'i'
-);
-
-function containsProfanity(text: string): boolean {
-  if (!text) return false;
-  return PROFANITY_REGEX.test(text);
-}
 
 const ADMIN_KEY = (process.env.ADMIN_KEY || '').trim() || crypto.randomBytes(4).toString('hex');
 const ADMIN_SESSION_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
@@ -62,6 +35,7 @@ const adminSessions = new Map<string, number>(); // token -> expiresAt
 function createAdminSession(): string {
   const token = crypto.randomBytes(24).toString('hex');
   adminSessions.set(token, Date.now() + ADMIN_SESSION_TTL_MS);
+  scheduleSave();
   return token;
 }
 
@@ -149,11 +123,11 @@ const INITIAL_POLLS: PollQuestion[] = [
     categoryLabel: '💌 THE RED ENVELOPE MATCH',
     title: "Who Should Win Tonight's Grand Candlelit Date Night?",
     prompt: "Tonight at 'Jab We Matched', 700 spectators decide which newly paired couple unseals the Red Envelope to win the VIP romantic dinner table and roses!",
-    requiresVoterInput: true,
+    requiresVoterInput: false,
     inputPromptText: 'Spectator Hot Take Required: Why does this couple belong together?',
     allowAudienceOptions: true,
     status: 'active',
-    totalVotes: 284,
+    totalVotes: 0,
     winnerOptionId: undefined,
     createdAt: new Date().toISOString(),
     options: [
@@ -162,7 +136,7 @@ const INITIAL_POLLS: PollQuestion[] = [
         label: 'Kabir & Ananya',
         description: 'The childhood best friends turned slow-burn romantic match. Sparks flying all evening!',
         avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-        votes: 146,
+        votes: 0,
         tag: 'Slow Burn Romance 💕',
       },
       {
@@ -170,7 +144,7 @@ const INITIAL_POLLS: PollQuestion[] = [
         label: 'Rohan & Priya',
         description: 'Enemies-to-lovers dynamic with electric stage banter. Unpredictable and high voltage!',
         avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        votes: 89,
+        votes: 0,
         tag: 'Spicy Chemistry 🔥',
       },
       {
@@ -178,7 +152,7 @@ const INITIAL_POLLS: PollQuestion[] = [
         label: 'Aarav & Meera',
         description: 'The speed-dating blind match that instantly bonded over Bollywood tunes and cutting chai.',
         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-        votes: 38,
+        votes: 0,
         tag: 'Fan Favorite Duo 🌸',
       },
       {
@@ -186,7 +160,7 @@ const INITIAL_POLLS: PollQuestion[] = [
         label: 'Audience Write-In: Nominate a New Pair!',
         description: 'Think two people on stage secretly belong together? Nominate your own dream match.',
         avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
-        votes: 11,
+        votes: 0,
         requiresWriteIn: true,
         tag: 'Audience Matchmaker ✍️',
       },
@@ -198,11 +172,11 @@ const INITIAL_POLLS: PollQuestion[] = [
     categoryLabel: '🚩 RED FLAG OR BOLLYWOOD ROMANCE?',
     title: "He texted 'Tum bohot alag ho' at 2 AM with a 7-minute audio. Red flag or pure romance?",
     prompt: "The hosts intercepted his late-night speed-dating notes. Spectators in the hall, what is your official verdict on his intentions?",
-    requiresVoterInput: true,
+    requiresVoterInput: false,
     inputPromptText: 'Tribunal Verdict Required: State your case on whether he is genuine or toxic:',
     allowAudienceOptions: true,
     status: 'active',
-    totalVotes: 342,
+    totalVotes: 0,
     winnerOptionId: undefined,
     createdAt: new Date().toISOString(),
     options: [
@@ -210,28 +184,28 @@ const INITIAL_POLLS: PollQuestion[] = [
         id: 'opt-rf1',
         label: 'Major Red Flag 🚩 Block Him Immediately!',
         description: "That is textbook sweet-talker energy. He definitely forwarded that 7-minute audio to 4 other girls.",
-        votes: 198,
+        votes: 0,
         tag: 'Red Flag Alert 🚩',
       },
       {
         id: 'opt-rf2',
         label: "Pure Aditya Kashyap Energy 🥺 He's Just a Hopeless Romantic",
         description: 'He was being vulnerable and sincere! True love starts with unhinged late-night voice messages.',
-        votes: 104,
+        votes: 0,
         tag: 'Hopeless Romantic 💖',
       },
       {
         id: 'opt-rf3',
         label: "Playing for the Stage Cameras 🎭 It's All for the Plot",
         description: 'He rehearsed that speech in the mirror before coming to Jab We Matched tonight.',
-        votes: 31,
+        votes: 0,
         tag: 'Bollywood Melodrama 🎬',
       },
       {
         id: 'opt-rf4',
         label: 'Audience Write-In: Prescribe His Stage Penalty!',
         description: 'Should he sing Tum Se Hi on stage or buy samosas for the entire front row?',
-        votes: 9,
+        votes: 0,
         requiresWriteIn: true,
         tag: 'Custom Penalty ⚡',
       },
@@ -243,11 +217,11 @@ const INITIAL_POLLS: PollQuestion[] = [
     categoryLabel: '💘 THE SOULMATE COMPATIBILITY TEST',
     title: 'Which Matched Couple Has Genuine Staying Power After Tonight?',
     prompt: 'Beyond the lights of the auditorium, which couple will actually last beyond the upcoming weekend?',
-    requiresVoterInput: true,
+    requiresVoterInput: false,
     inputPromptText: 'Your Reality Check: What will make or break their connection?',
     allowAudienceOptions: false,
     status: 'active',
-    totalVotes: 215,
+    totalVotes: 0,
     winnerOptionId: undefined,
     createdAt: new Date().toISOString(),
     options: [
@@ -255,21 +229,21 @@ const INITIAL_POLLS: PollQuestion[] = [
         id: 'opt-ct1',
         label: 'Dev & Tara (Pure Soulmate Harmony)',
         description: 'Same dry humor, shared Spotify playlist, already planning date #2.',
-        votes: 119,
+        votes: 0,
         tag: 'Soulmate Chemistry 💍',
       },
       {
         id: 'opt-ct2',
         label: 'Zayn & Natasha (Chaotic Opposites)',
         description: 'Electric sparks and endless bickering. High passion but will they text back tomorrow?',
-        votes: 72,
+        votes: 0,
         tag: 'Rollercoaster Romance 🎢',
       },
       {
         id: 'opt-ct3',
         label: 'Neither 🙅 Destination: Friendzone',
         description: 'They will follow each other on Instagram tonight and never talk again.',
-        votes: 24,
+        votes: 0,
         tag: 'Campus Reality 💀',
       },
     ],
@@ -280,11 +254,11 @@ const INITIAL_POLLS: PollQuestion[] = [
     categoryLabel: '⚡ THE WILDCARD MATCHMAKER BUTTON',
     title: 'Should The Mystery Audience Member Challenge The Stage Match?',
     prompt: 'Someone in row 4 has declared they have an unresolved confession for one of the stage contestants! Do the 700 spectators give them the microphone?',
-    requiresVoterInput: true,
+    requiresVoterInput: false,
     inputPromptText: 'Why vote this way? Share your reaction with the host:',
     allowAudienceOptions: true,
     status: 'active',
-    totalVotes: 188,
+    totalVotes: 0,
     winnerOptionId: undefined,
     createdAt: new Date().toISOString(),
     options: [
@@ -292,49 +266,21 @@ const INITIAL_POLLS: PollQuestion[] = [
         id: 'opt-wc1',
         label: 'Give Them The Mic! 🎤 We Need Peak Bollywood Drama',
         description: 'We did not come to Jab We Matched for peace, we came for jaw-dropping plot twists!',
-        votes: 134,
+        votes: 0,
         tag: 'Peak Cinema 🍿',
       },
       {
         id: 'opt-wc2',
         label: 'Protect The Couple 🛡️ Respect Their Match',
         description: 'They just had a sweet moment together; do not derail the connection with outside chaos.',
-        votes: 54,
+        votes: 0,
         tag: 'Protect The Match 🕊️',
       },
     ],
   },
 ];
 
-const INITIAL_HOT_TAKES: AudienceHotTake[] = [
-  {
-    id: 'ht-1',
-    pollId: 'poll-envelope-1',
-    voterName: 'PoojaFromRow3',
-    optionLabel: 'Kabir & Ananya',
-    hotTake: 'Kabir literally looked at Ananya like Aditya in Jab We Met when they shared the microphone. If they do not win the red envelope date I am calling the hosts!',
-    spiceLevel: 5,
-    timestamp: 'Just now',
-  },
-  {
-    id: 'ht-2',
-    pollId: 'poll-redflag-2',
-    voterName: 'BollyGeek99',
-    optionLabel: 'Major Red Flag 🚩 Block Him Immediately!',
-    hotTake: 'A 7-minute voice note at 2 AM is not romantic, that is a whole podcast episode. Block him and save your sanity!',
-    spiceLevel: 5,
-    timestamp: '1 min ago',
-  },
-  {
-    id: 'ht-3',
-    pollId: 'poll-envelope-1',
-    voterName: 'ChaiLoverRohan',
-    optionLabel: 'Rohan & Priya',
-    hotTake: 'Rohan and Priya have that exact enemies-to-lovers tension that makes for legendary campus stories. Send them to the candlelit table!',
-    spiceLevel: 4,
-    timestamp: '3 mins ago',
-  },
-];
+const INITIAL_HOT_TAKES: AudienceHotTake[] = [];
 
 // ---------------------------------------------------------------------------
 // PERSISTENCE
@@ -346,7 +292,8 @@ const INITIAL_HOT_TAKES: AudienceHotTake[] = [
 // on every restart/redeploy. Without a disk, this still helps for in-place
 // crashes that don't recreate the container, but not for a real redeploy.
 // ---------------------------------------------------------------------------
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+// process.cwd(), not __dirname — this file runs as an ES module in dev (no __dirname)
+const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
 const DATA_FILE = path.join(DATA_DIR, 'state.json');
 
 function ensureDataDir() {
@@ -383,6 +330,10 @@ function persistNow() {
       waitingScreenActive: state.waitingScreenActive,
       confessions,
       voteRegistry,
+      nominationRegistry,
+      // Host logins survive a restart too, so the stage laptop isn't bounced
+      // to the passphrase screen mid-show.
+      adminSessions: [...adminSessions.entries()],
       savedAt: new Date().toISOString(),
     };
     const tmpFile = `${DATA_FILE}.tmp`;
@@ -403,6 +354,8 @@ function loadPersistedState(): Partial<{
   waitingScreenActive: boolean;
   confessions: Confession[];
   voteRegistry: Record<string, Record<string, string>>;
+  nominationRegistry: Record<string, Record<string, true>>;
+  adminSessions: [string, number][];
 }> | null {
   try {
     if (!fs.existsSync(DATA_FILE)) return null;
@@ -438,6 +391,11 @@ const MAX_PUBLIC_CONFESSIONS = 60; // cap what's ever sent to the public feed
 // currently have selected. Voting again just moves this pointer and
 // adjusts the counts — it no longer adds a second vote.
 let voteRegistry: Record<string, Record<string, string>> = persisted?.voteRegistry || {};
+// pollId -> deviceId -> true: one audience nomination per phone per question
+let nominationRegistry: Record<string, Record<string, true>> = persisted?.nominationRegistry || {};
+for (const [token, expiresAt] of persisted?.adminSessions || []) {
+  if (typeof token === 'string' && Number(expiresAt) > Date.now()) adminSessions.set(token, Number(expiresAt));
+}
 
 function getPublicConfessions() {
   return confessions
@@ -455,12 +413,12 @@ const state = {
   activePollId: persisted?.activePollId || 'poll-envelope-1',
   hotTakes: persisted?.hotTakes || (JSON.parse(JSON.stringify(INITIAL_HOT_TAKES)) as AudienceHotTake[]),
   reactionCounts: (persisted?.reactionCounts || {
-    '🌹': 342,
-    '🚩': 215,
-    '🔥': 489,
-    '💔': 118,
-    '🍿': 276,
-    '💖': 512,
+    '🌹': 0,
+    '🚩': 0,
+    '🔥': 0,
+    '💔': 0,
+    '🍿': 0,
+    '💖': 0,
   }) as Record<string, number>,
   featuredConfessionId: persisted?.featuredConfessionId ?? null as string | null,
   confessionsBoardActive: persisted?.confessionsBoardActive ?? false,
@@ -518,7 +476,10 @@ async function startServer() {
   // Admin logout
   app.post('/api/admin/logout', (req, res) => {
     const token = req.header('x-admin-token');
-    if (token) adminSessions.delete(token);
+    if (token) {
+      adminSessions.delete(token);
+      scheduleSave();
+    }
     return res.json({ success: true });
   });
 
@@ -711,7 +672,7 @@ async function startServer() {
     // option this vote actually targets — don't touch counts yet, that
     // happens uniformly below via the one-vote-per-device logic).
     if (option?.requiresWriteIn && userRequiredInput?.customWriteIn) {
-      const customText = userRequiredInput.customWriteIn.trim();
+      const customText = clampText(userRequiredInput.customWriteIn, LIMITS.writeIn);
       if (customText) {
         if (containsProfanity(customText)) {
           return res.status(400).json({ error: 'Please keep nominations family-friendly.' });
@@ -762,15 +723,15 @@ async function startServer() {
     // Record Audience Hot Take (optional commentary — filtered, but never
     // blocks the vote itself; a flagged hot take is just dropped silently)
     let newHotTake: AudienceHotTake | null = null;
-    const hotTakeText = userRequiredInput?.hotTake?.trim();
+    const hotTakeText = clampText(userRequiredInput?.hotTake, LIMITS.hotTake);
     if (hotTakeText && !containsProfanity(hotTakeText)) {
       newHotTake = {
         id: `ht-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
         pollId,
-        voterName: voterName?.trim() || 'Audience Matchmaker',
+        voterName: 'Spectator',
         optionLabel: option.label,
         hotTake: hotTakeText,
-        spiceLevel: userRequiredInput.spiceLevel || 5,
+        spiceLevel: Math.min(5, Math.max(1, Number(userRequiredInput?.spiceLevel) || 3)),
         timestamp: 'Just now',
       };
       state.hotTakes.unshift(newHotTake);
@@ -802,13 +763,15 @@ async function startServer() {
       deviceId?: string;
     };
 
-    if (!pollId || !label?.trim()) {
+    const cleanLabel = clampText(label, LIMITS.optionLabel);
+    const cleanDescription = clampText(description, LIMITS.optionDescription);
+    if (!pollId || !cleanLabel) {
       return res.status(400).json({ error: 'Missing pollId or option label' });
     }
     if (!deviceId) {
       return res.status(400).json({ error: 'Missing deviceId' });
     }
-    if (containsProfanity(label) || containsProfanity(description || '')) {
+    if (containsProfanity(cleanLabel) || containsProfanity(cleanDescription)) {
       return res.status(400).json({ error: 'Please keep nominations family-friendly.' });
     }
 
@@ -820,18 +783,28 @@ async function startServer() {
     if (!poll.allowAudienceOptions) {
       return res.status(403).json({ error: 'This question does not allow audience option submissions' });
     }
+    if (poll.status !== 'active') {
+      return res.status(403).json({ error: 'Voting is closed for this question' });
+    }
+    const nominated = nominationRegistry[pollId] || (nominationRegistry[pollId] = {});
+    if (nominated[deviceId]) {
+      return res.status(429).json({ error: 'You have already nominated an option for this question' });
+    }
+    if (poll.options.some((o) => o.label.toLowerCase() === cleanLabel.toLowerCase())) {
+      return res.status(409).json({ error: 'That nominee is already on the ballot' });
+    }
 
     const newOption: PollOption = {
-      id: `opt-aud-${Date.now()}`,
-      label: label.trim(),
-      description: description?.trim() || `Nominated live by spectator ${createdBy || 'Matchmaker'}`,
+      id: `opt-aud-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      label: cleanLabel,
+      description: cleanDescription || 'Nominated live by the audience',
       votes: 0,
       isUserCreated: true,
-      createdBy: createdBy || 'Spectator',
-      tag: tag?.trim() || 'Crowd Nominee 🌟',
+      tag: 'Crowd Nominee 🌟',
     };
 
     poll.options.push(newOption);
+    nominated[deviceId] = true;
 
     // Nominating counts as this device's vote for their own nomination —
     // same one-vote-per-device rule as regular voting, so repeat
@@ -1146,12 +1119,12 @@ async function startServer() {
   // `confessions` store for why this never touches the public `state`.
   app.post('/api/confessions', (req, res) => {
     const { text } = req.body as { text?: string };
-    const trimmed = (text || '').trim();
+    const trimmed = clampText(text, LIMITS.confession + 1);
 
     if (!trimmed) {
       return res.status(400).json({ error: 'Confession text is required' });
     }
-    if (trimmed.length > 300) {
+    if (trimmed.length > LIMITS.confession) {
       return res.status(400).json({ error: 'Keep it under 300 characters' });
     }
     if (containsProfanity(trimmed)) {
@@ -1347,6 +1320,8 @@ async function startServer() {
       });
       state.hotTakes = [];
       voteRegistry = {}; // every device's vote pointer is stale after a full reset
+      nominationRegistry = {};
+      for (const key of Object.keys(state.reactionCounts)) state.reactionCounts[key] = 0;
       scheduleSave();
 
       broadcast({
@@ -1369,6 +1344,7 @@ async function startServer() {
     poll.status = 'active';
     poll.winnerOptionId = undefined;
     delete voteRegistry[pollId]; // this poll's device vote pointers are stale now
+    delete nominationRegistry[pollId];
 
     // Clear hot takes associated with this reset question so the live tickers refresh
     state.hotTakes = state.hotTakes.filter((h) => h.pollId !== pollId);

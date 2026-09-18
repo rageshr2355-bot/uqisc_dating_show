@@ -56,12 +56,12 @@ export function StageCornerQr() {
         {/* Text Call to Action */}
         <div className="flex flex-col text-left pr-2">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-pink-300 font-mono">
+            <span className="w-2 h-2 rounded-full bg-pink-300 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-pink-300">
               AUDIENCE LIVE
             </span>
           </div>
-          <span className="text-xs sm:text-sm font-black font-matched text-white uppercase tracking-tight">
+          <span className="text-xs sm:text-sm font-black font-display text-white tracking-tight">
             SCAN TO VOTE
           </span>
           <span className="text-[10px] text-pink-200/80 flex items-center gap-1 mt-0.5 font-medium">

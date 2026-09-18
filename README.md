@@ -1,16 +1,22 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
-
 # Jab We Matched — Live Dating Show Polling
 
 Live interactive audience polling for a dating-show / matchmaking event: real-time voting,
-spectator "hot takes," reaction bursts, envelope-reveal animations, and a stage broadcast
-screen — built for ~500 concurrent phones plus one shared stage display.
+optional audience comments, anonymous confessions, envelope-reveal animations, and a stage
+broadcast screen — built for ~700 concurrent phones plus one shared stage display.
 
-This is the same app you had running on AI Studio, with one important addition: **an admin
-passphrase now protects the Stage Screen and Host Console**, so only you can drive the show
-while the audience link stays completely open, no sign-in required.
+## How a show runs
+
+1. Phones open the audience link and see a **"Hang tight"** waiting screen. Nothing is shown
+   until you push a question.
+2. In the Host Console, hit **Push to stage & phones** on a question. It appears on the stage
+   screen and on every phone at the same moment.
+3. Everyone votes. **One vote per phone** — voting again just changes your vote. Results appear
+   on a phone once it has voted.
+4. **Lock** voting, then **Reveal** the winner on stage.
+5. **Show Waiting Screen** takes the question off the stage and all phones between segments.
+
+Everything (questions, votes, confessions, host logins) is saved to disk continuously, so a
+server restart mid-show — during the food break, say — picks up exactly where it left off.
 
 ## The three views
 
@@ -26,6 +32,14 @@ even if someone manually edits the URL to `?view=host`, the server itself reject
 host-only action (switching questions, locking votes, resetting, editing, deleting, simulating
 spectators) unless the request carries a valid admin session token — so this isn't just a UI
 trick, it's enforced by the backend.
+
+## Before the event
+
+- Set `ADMIN_KEY` (below) and, if your host has a persistent disk, point `DATA_DIR` at it.
+- Edit the placeholder questions in the Host Console to your real ones. They ship with zero votes.
+- Run **Reset all votes** in the Host Console after rehearsing so the counters start clean.
+- Optionally rehearse the load: `node load-tests/audience-wave.mjs https://your-domain 700 60 10`
+  opens 700 fake phones, joins them over 60s and votes over 10s, and checks the totals add up.
 
 ## Setting your admin passphrase
 
@@ -96,10 +110,20 @@ To get a link your audience can open with zero Google login, do one of the follo
 Whichever you choose, the admin passphrase built into this app is what keeps Stage/Host
 private — you don't need (and shouldn't rely on) a platform-level login wall for that anymore.
 
-## Architecture (unchanged from the original)
+## Architecture
 
 - **Frontend:** React + Vite, single-page app, view switches via `?view=` query param.
-- **Backend:** Express + `ws` WebSocket server in `server.ts`, in-memory state, broadcasts vote/
-  question/reaction updates to every connected client in real time.
-- **New:** an in-memory admin session store (`server.ts`) gates every `/api/host/*` and
-  question-editing endpoint behind a passphrase exchanged for a short-lived session token.
+- **Backend:** Express + `ws` WebSocket server in `server.ts`. One process; state lives in memory
+  and is mirrored to `DATA_DIR/state.json` (default `./data/`) a second after every change.
+- **Vote integrity:** each phone makes itself a random device id on first load and sends it with
+  every vote. Votes are stored per (question, device); re-voting moves the vote. The same id
+  limits audience nominations to one per phone per question.
+- **Moderation:** everything an audience member types is length-capped and checked against the
+  blocklist in `moderation.ts` (English + romanised Hindi, tolerant of `sh1t`-style spelling)
+  before it's stored or broadcast — flagged nominations are rejected, flagged comments dropped.
+  Confessions additionally wait for host approval. Add words to `BLOCKLIST` as needed.
+- **Admin:** creating, editing, switching, locking and resetting questions all require the
+  admin session token. Audience endpoints (`/api/vote`, `/api/options`, `/api/reaction`,
+  `/api/confessions`) are public by design.
+- **Broadcast load:** votes are coalesced into one broadcast per 80 ms and the "in hall" counter
+  into one per 400 ms burst. Both matter at 700 phones.

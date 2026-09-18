@@ -57,13 +57,13 @@ export function AdminGate({ view }: { view: 'stage' | 'host' }) {
           <span>{viewLabel} · Admin Only</span>
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-black font-matched text-pink-100 matched-3d-text uppercase tracking-wide mb-2">
+        <h2 className="text-xl sm:text-2xl font-black font-display text-pink-100 mb-2">
           Enter Admin Passphrase
         </h2>
         <p className="text-xs sm:text-sm text-pink-200/90 mb-5 max-w-sm mx-auto leading-relaxed">
           The {viewLabel} controls the live show for every device in the room, so it's locked to the
           event host. Enter the shared passphrase to continue — it's shown in your server's
-          startup logs (or whatever you set <code className="font-mono text-pink-100">ADMIN_KEY</code> to).
+          startup logs (or whatever you set <code className=" text-pink-100">ADMIN_KEY</code> to).
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3 text-left">
