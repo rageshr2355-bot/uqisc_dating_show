@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { usePollContext } from './PollContext';
-import { LaceCornerDecoration } from './JabWeMatchedBrand';
+import { LaceCornerDecoration, JabWeMatchedBrand } from './JabWeMatchedBrand';
 import { 
   Trophy, 
   Lock, 
@@ -16,7 +16,8 @@ import {
   MailOpen,
   PartyPopper,
   Edit3,
-  RotateCcw
+  RotateCcw,
+  Clock
 } from 'lucide-react';
 
 export function StageDisplayView() {
@@ -32,17 +33,35 @@ export function StageDisplayView() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isResettingStage, setIsResettingStage] = useState(false);
 
-  const confessionListRef = useRef<HTMLDivElement>(null);
-  const confessionItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  // Host-controlled waiting screen — same toggle that controls the
+  // Audience Pad's "Hang Tight" screen, shown big-screen style here so the
+  // whole room sees the same thing during a break/between segments. Takes
+  // priority even if there's technically still an active poll underneath.
+  if (state.waitingScreenActive) {
+    return (
+      <div className="relative min-h-[90vh] bg-quatrefoil flex items-center justify-center p-8 overflow-hidden text-pink-50">
+        <LaceCornerDecoration position="top-left" />
+        <LaceCornerDecoration position="top-right" />
+        <LaceCornerDecoration position="bottom-left" />
+        <LaceCornerDecoration position="bottom-right" />
 
-  useEffect(() => {
-    if (state.confessionsBoardActive && state.featuredConfessionId) {
-      const el = confessionItemRefs.current[state.featuredConfessionId];
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [state.featuredConfessionId, state.confessionsBoardActive]);
+        <div className="relative z-10 text-center max-w-2xl">
+          <div className="flex justify-center mb-8">
+            <JabWeMatchedBrand size="lg" />
+          </div>
+          <div className="mx-auto w-24 h-24 rounded-full bg-black/40 border-4 border-white/70 flex items-center justify-center mb-8 animate-pulse-glow">
+            <Clock className="w-11 h-11 text-pink-100" />
+          </div>
+          <h2 className="text-4xl sm:text-6xl font-black font-matched text-white matched-3d-text uppercase tracking-wide mb-4">
+            Hang Tight
+          </h2>
+          <p className="text-xl sm:text-2xl text-pink-50/90 leading-relaxed">
+            The next ballot is coming up shortly!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!activePoll) {
     return (
@@ -77,44 +96,34 @@ export function StageDisplayView() {
 
   return (
     <div className="relative min-h-[90vh] flex flex-col justify-between p-4 sm:p-8 bg-quatrefoil overflow-hidden text-pink-50">
-      {/* Anonymous Confessions Board — a bounded, scrollable panel (not a
-          full-screen takeover) that the host can open and navigate through
-          confession by confession from the Host Console. */}
-      {state.confessionsBoardActive && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-6 sm:p-12 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="relative w-full max-w-3xl max-h-[75vh] flex flex-col rounded-3xl bg-gradient-to-b from-[#3a0a4a] via-[#2e0838] to-[#1e0522] border-2 border-purple-300/70 shadow-2xl overflow-hidden">
-            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-4 border-b border-purple-400/25 bg-black/30">
-              <Mail className="w-5 h-5 text-purple-300" />
-              <h3 className="font-black font-matched text-purple-100 uppercase tracking-wider text-sm sm:text-base">
-                Anonymous Confessions
-              </h3>
-            </div>
+      {/* Anonymous Confession Spotlight — shows ONLY the one confession the
+          host has currently selected in the Host Console's board (not the
+          whole list); bounded so it never covers the entire screen. */}
+      {state.confessionsBoardActive && (() => {
+        const featured = state.confessions.find((c) => c.id === state.featuredConfessionId);
+        return (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-6 sm:p-12 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="relative w-full max-w-3xl max-h-[70vh] flex flex-col rounded-3xl bg-gradient-to-b from-[#3a0a4a] via-[#2e0838] to-[#1e0522] border-2 border-purple-300/70 shadow-2xl overflow-hidden">
+              <div className="flex-shrink-0 flex items-center gap-2 px-5 py-4 border-b border-purple-400/25 bg-black/30">
+                <Mail className="w-5 h-5 text-purple-300" />
+                <h3 className="font-black font-matched text-purple-100 uppercase tracking-wider text-sm sm:text-base">
+                  Anonymous Confession
+                </h3>
+              </div>
 
-            <div ref={confessionListRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-              {state.confessions.length === 0 ? (
-                <p className="text-center text-purple-300/60 italic py-8">No confessions yet.</p>
-              ) : (
-                [...state.confessions].reverse().map((confession) => {
-                  const isFocused = confession.id === state.featuredConfessionId;
-                  return (
-                    <div
-                      key={confession.id}
-                      ref={(el) => (confessionItemRefs.current[confession.id] = el)}
-                      className={`p-4 rounded-2xl border text-lg sm:text-xl italic leading-snug transition-all ${
-                        isFocused
-                          ? 'bg-purple-900/70 border-purple-300 shadow-lg shadow-purple-950/50 text-white scale-[1.02]'
-                          : 'bg-black/40 border-purple-400/20 text-purple-100/90'
-                      }`}
-                    >
-                      "{confession.text}"
-                    </div>
-                  );
-                })
-              )}
+              <div className="flex-1 flex items-center justify-center px-8 py-12 sm:py-16">
+                {featured ? (
+                  <p className="text-center text-2xl sm:text-4xl italic leading-snug text-white drop-shadow-lg">
+                    "{featured.text}"
+                  </p>
+                ) : (
+                  <p className="text-center text-purple-300/60 italic">Pick a confession from the Host Console.</p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Delicate white lace corner embroidery from the poster */}
       <LaceCornerDecoration position="top-left" />
