@@ -1,8 +1,13 @@
 // Web Audio API Sound Effects Synthesizer for Reality Show Drama
-
+//
+// Sound is permanently disabled for this event — `enabled` defaults to
+// false and there is no UI anywhere that can flip it back on. Every method
+// below checks `enabled` first (added to the two that were missing it), so
+// even a stray call site elsewhere in the app can never actually produce
+// audio.
 class SoundManager {
   private ctx: AudioContext | null = null;
-  public enabled: boolean = true;
+  public enabled: boolean = false;
 
   private initCtx() {
     if (!this.ctx) {

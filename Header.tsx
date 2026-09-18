@@ -5,8 +5,6 @@ import {
   Tv, 
   Smartphone, 
   Sliders, 
-  Volume2, 
-  VolumeX, 
   Users, 
   Sparkles, 
   Check, 
@@ -24,8 +22,6 @@ export function Header() {
     activeView, 
     setActiveView, 
     voterName, 
-    soundEnabled, 
-    setSoundEnabled, 
     state,
     isConnected,
     isAdmin,
@@ -172,20 +168,6 @@ export function Header() {
           >
             <Mail className="w-3.5 h-3.5 text-pink-300" />
             <span className="hidden sm:inline">Confessions</span>
-          </button>
-
-          {/* Sound FX Toggle */}
-          <button
-            id="toggle-sound-btn"
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            title={soundEnabled ? 'Mute Event Audio' : 'Enable Event Audio'}
-            className={`p-2 rounded-lg border transition-all ${
-              soundEnabled
-                ? 'bg-rose-900/60 border-pink-500/40 text-pink-200 hover:bg-rose-800'
-                : 'bg-[#2a040b] border-rose-950 text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
           {/* Voter Screen Name — random per-device, never editable */}

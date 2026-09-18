@@ -9,12 +9,8 @@ import {
   RotateCcw, 
   Trash2, 
   Radio, 
-  Volume2, 
   Sparkles, 
   Users, 
-  CheckCircle2, 
-  AlertCircle,
-  Play,
   Heart,
   Flame,
   Mail,
@@ -44,7 +40,6 @@ export function HostControls() {
     updatePollStatus, 
     resetPollVotes, 
     simulateSpectators, 
-    triggerSound, 
     deletePoll,
     openEditModal,
     removePfps,
@@ -296,7 +291,7 @@ export function HostControls() {
             <div className="mt-4 pt-4 border-t border-purple-400/20">
               <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <p className="text-[11px] font-bold text-purple-200/80 uppercase tracking-wider">
-                  Live on audience feed — launch one to the big screen
+                  Approved confessions — launch one to the big screen
                 </p>
                 {state.confessionsBoardActive && (
                   <div className="flex items-center gap-2">
@@ -896,63 +891,6 @@ export function HostControls() {
               <span>{pfpActionMessage}</span>
             </div>
           )}
-        </div>
-
-        {/* Stage Soundboard Controls */}
-        <div className="p-5 rounded-3xl bg-[#35040d]/90 border border-pink-300/30 shadow-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Volume2 className="w-4 h-4 text-pink-300" />
-            <h3 className="font-bold text-white text-sm font-display">
-              Auditorium Soundboard Trigger
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            <button
-              id="sound-heartbeat-btn"
-              onClick={() => triggerSound('heartbeat')}
-              className="py-2.5 px-3 rounded-xl bg-black/40 hover:bg-rose-900/60 border border-pink-400/25 text-xs font-bold text-pink-100 font-mono transition-all flex items-center justify-center gap-1.5"
-            >
-              <Heart className="w-3.5 h-3.5 text-rose-500" />
-              <span>Heartbeat Thump</span>
-            </button>
-
-            <button
-              id="sound-tension-btn"
-              onClick={() => triggerSound('stinger')}
-              className="py-2.5 px-3 rounded-xl bg-black/40 hover:bg-rose-900/60 border border-pink-400/25 text-xs font-bold text-pink-100 font-mono transition-all flex items-center justify-center gap-1.5"
-            >
-              <Play className="w-3.5 h-3.5 text-amber-400" />
-              <span>Suspense Stinger</span>
-            </button>
-
-            <button
-              id="sound-fanfare-btn"
-              onClick={() => triggerSound('fanfare')}
-              className="py-2.5 px-3 rounded-xl bg-black/40 hover:bg-rose-900/60 border border-pink-400/25 text-xs font-bold text-pink-100 font-mono transition-all flex items-center justify-center gap-1.5"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-pink-300" />
-              <span>Love Fanfare</span>
-            </button>
-
-            <button
-              id="sound-chime-btn"
-              onClick={() => triggerSound('chime')}
-              className="py-2.5 px-3 rounded-xl bg-black/40 hover:bg-rose-900/60 border border-pink-400/25 text-xs font-bold text-pink-100 font-mono transition-all flex items-center justify-center gap-1.5"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Vote Chime</span>
-            </button>
-
-            <button
-              id="sound-buzzer-btn"
-              onClick={() => triggerSound('buzzer')}
-              className="py-2.5 px-3 rounded-xl bg-black/40 hover:bg-rose-900/60 border border-pink-400/25 text-xs font-bold text-pink-100 font-mono transition-all flex items-center justify-center gap-1.5"
-            >
-              <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-              <span>Red Flag Buzzer</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -4,13 +4,10 @@ import { LaceCornerDecoration } from './JabWeMatchedBrand';
 import { 
   Trophy, 
   Lock, 
-  Flame, 
   Users, 
   Sparkles, 
   Radio, 
   QrCode, 
-  Volume2, 
-  VolumeX, 
   Maximize2, 
   Heart,
   CheckCircle2,
@@ -27,9 +24,6 @@ export function StageDisplayView() {
     activePoll, 
     state, 
     updatePollStatus, 
-    triggerSound, 
-    soundEnabled, 
-    setSoundEnabled,
     openEditModal,
     resetPollVotes,
     setIsQrModalOpen
@@ -217,15 +211,6 @@ export function StageDisplayView() {
             title="Show Spectator Join QR Code"
           >
             <QrCode className="w-4 h-4" />
-          </button>
-
-          <button
-            id="stage-toggle-audio-btn"
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2 rounded-xl bg-black/30 hover:bg-black/50 border border-pink-300/40 text-pink-200 hover:text-white transition-all"
-            title={soundEnabled ? 'Mute' : 'Unmute'}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
           <button
@@ -422,58 +407,6 @@ export function StageDisplayView() {
         </div>
       </div>
 
-      {/* Bottom Auditorium Hot Takes Live Marquee Ticker */}
-      <div className="relative z-10 pt-4 border-t border-pink-300/25">
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-red-950/90 border border-pink-400/50 text-pink-200 text-xs font-black font-mono tracking-wider uppercase">
-            <Flame className="w-3.5 h-3.5 text-rose-400" />
-            <span>500 SPECTATOR LIVE HOT TAKES</span>
-          </div>
-
-          {/* Marquee Content */}
-          <div className="overflow-hidden whitespace-nowrap w-full">
-            <div className="animate-marquee flex items-center gap-6 text-sm">
-              {state.hotTakes.slice(0, 10).map((take) => (
-                <div
-                  key={take.id}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-black/40 border border-pink-400/20 text-pink-100"
-                >
-                  <span className="font-bold text-pink-200 text-xs">{take.voterName}:</span>
-                  <span className="text-slate-100 italic text-xs">"{take.hotTake}"</span>
-                  <span className="text-[11px] px-1.5 py-0.2 rounded bg-rose-900/60 text-pink-200 font-mono">
-                    🌶️ {take.spiceLevel}/5
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Anonymous Confessions Wall — only ever shows host-approved entries */}
-      {state.confessions.length > 0 && (
-        <div className="relative z-10 pt-4 mt-4 border-t border-purple-300/20">
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-purple-950/90 border border-purple-400/50 text-purple-200 text-xs font-black font-mono tracking-wider uppercase">
-              <Mail className="w-3.5 h-3.5 text-purple-300" />
-              <span>Anonymous Confessions</span>
-            </div>
-
-            <div className="overflow-hidden whitespace-nowrap w-full">
-              <div className="animate-marquee flex items-center gap-6 text-sm">
-                {state.confessions.slice(-15).reverse().map((confession) => (
-                  <div
-                    key={confession.id}
-                    className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-black/40 border border-purple-400/25 text-purple-50"
-                  >
-                    <span className="text-slate-100 italic text-xs">"{confession.text}"</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
