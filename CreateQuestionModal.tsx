@@ -279,7 +279,7 @@ export function CreateQuestionModal() {
         {activeTab === 'bank' && (
           <div className="p-4 sm:p-6 max-h-[70vh] overflow-y-auto space-y-3">
             <p className="text-xs text-pink-200/90 font-medium">
-              Pick a ready-to-air Bollywood or speed-dating dilemma. You can broadcast it straight to the 500 spectators or customize its options:
+              Pick a ready-to-air Bollywood or speed-dating dilemma. You can broadcast it straight to the 700 spectators or customize its options:
             </p>
 
             <div className="grid grid-cols-1 gap-3">
@@ -420,7 +420,7 @@ export function CreateQuestionModal() {
                 type="text"
                 value={newPrompt}
                 onChange={(e) => setNewPrompt(e.target.value)}
-                placeholder="e.g. 500 spectators in the auditorium decide who unseals the grand prize date!"
+                placeholder="e.g. 700 spectators in the auditorium decide who unseals the grand prize date!"
                 maxLength={200}
                 className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-pink-300/40 text-white placeholder-pink-300/40 text-xs focus:outline-none focus:ring-1 focus:ring-pink-300"
               />
@@ -516,7 +516,7 @@ export function CreateQuestionModal() {
                   onChange={(e) => setAllowAudienceOptions(e.target.checked)}
                   className="rounded border-pink-300 text-rose-600 focus:ring-0"
                 />
-                <span>Allow 500 Spectators to Nominate Additional Write-in Options Live</span>
+                <span>Allow 700 Spectators to Nominate Additional Write-in Options Live</span>
               </label>
             </div>
 

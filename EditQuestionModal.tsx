@@ -299,7 +299,7 @@ export function EditQuestionModal() {
           {/* Question Title */}
           <div>
             <label className="block text-xs font-bold text-pink-200 mb-1">
-              Question Title (The main headline shown to 500 spectators):
+              Question Title (The main headline shown to 700 spectators):
             </label>
             <textarea
               id="edit-poll-title-input"
@@ -556,7 +556,7 @@ export function EditQuestionModal() {
                 onChange={(e) => setAllowAudienceOptions(e.target.checked)}
                 className="rounded border-pink-300 text-rose-600 focus:ring-0 w-4 h-4"
               />
-              <span>Allow 500 Spectators to Nominate Additional Write-in Options</span>
+              <span>Allow 700 Spectators to Nominate Additional Write-in Options</span>
             </label>
           </div>
 

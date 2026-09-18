@@ -210,7 +210,7 @@ export function HostControls() {
               JAB WE MATCHED HOST CONTROLS
             </h1>
             <p className="text-xs text-pink-200/90 font-medium">
-              Manage live auditorium ballots, lock/unseal the red envelope, and monitor 500 spectator connections.
+              Manage live auditorium ballots, lock/unseal the red envelope, and monitor 700 spectator connections.
             </p>
           </div>
 
@@ -387,17 +387,17 @@ export function HostControls() {
           )}
         </div>
 
-        {/* 500 Spectators High Scale Diagnostics & Stress Tester */}
+        {/* 700 Spectators High Scale Diagnostics & Stress Tester */}
         <div className="p-5 rounded-3xl bg-gradient-to-r from-[#5a0914] via-[#4c0519] to-[#3b040e] border-2 border-pink-300 shadow-xl">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-pink-400/20">
             <div>
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
                 <h3 className="font-bold text-white text-sm font-matched uppercase tracking-wider">
-                  500 Spectator Scale & Engine Health
+                  700 Spectator Scale & Engine Health
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-950 border border-emerald-400 text-emerald-300 font-mono">
-                  OPTIMIZED FOR 500 USERS
+                  OPTIMIZED FOR 700 USERS
                 </span>
               </div>
               <p className="text-xs text-pink-200/80 mt-1">
@@ -456,13 +456,13 @@ export function HostControls() {
               </button>
 
               <button
-                id="btn-simulate-500-spectators"
-                onClick={() => handleSimulate(500)}
+                id="btn-simulate-700-spectators"
+                onClick={() => handleSimulate(700)}
                 disabled={isSimulating}
                 className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black font-mono shadow-md transition-all disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Users className="w-3.5 h-3.5 text-white" />
-                <span>+500 Max Capacity Wave</span>
+                <span>+700 Max Capacity Wave</span>
               </button>
             </div>
           </div>

@@ -54,7 +54,7 @@ export const JAB_WE_MATCHED_PRESETS: QuestionTemplate[] = [
     categoryLabel: '🚩 RED FLAG OR INNOCENT?',
     badge: 'Phone Drama 📱',
     title: "He still has photos with his ex on his Instagram grid from 2022. Dealbreaker?",
-    prompt: "A contestant discovered their match's old vacation photos with an ex are still up. 500 spectators, is this a red flag or healthy maturity?",
+    prompt: "A contestant discovered their match's old vacation photos with an ex are still up. 700 spectators, is this a red flag or healthy maturity?",
     options: [
       {
         label: 'Major Red Flag 🚩 Archive or Delete immediately!',
@@ -138,7 +138,7 @@ export const JAB_WE_MATCHED_PRESETS: QuestionTemplate[] = [
     categoryLabel: '⚡ WILDCARD CEREMONY',
     badge: 'Cupid Decision 🏹',
     title: 'Which Contestant Has The Most Irresistible Stage Charm Tonight?',
-    prompt: 'The 500 spectators vote on who stole the show with their wits, style, and charisma.',
+    prompt: 'The 700 spectators vote on who stole the show with their wits, style, and charisma.',
     options: [
       {
         label: 'The Witty Banter Specialist 🎙️',

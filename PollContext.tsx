@@ -15,7 +15,7 @@ interface PollContextType {
   activeView: 'audience' | 'stage' | 'host';
   setActiveView: (view: 'audience' | 'stage' | 'host') => void;
   voterName: string;
-  setVoterName: (name: string) => void;
+  deviceId: string;
   myVotes: Record<string, { optionId: string; userRequiredInput: UserVoteInput }>;
   activeBursts: ReactionBurst[];
   soundEnabled: boolean;
@@ -187,8 +187,27 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
 
   const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
   const [showStageCornerQr, setShowStageCornerQr] = useState<boolean>(true);
-  const [voterName, setVoterNameState] = useState<string>(() => {
-    return localStorage.getItem('jab_matched_voter_name') || `Spectator_${Math.floor(100 + Math.random() * 900)}`;
+  // Votes are genuinely anonymous now — no randomized "Spectator_123" name
+  // is generated or shown anywhere; this is only a generic fallback label
+  // used internally for legacy hot-take/nomination attribution fields.
+  const [voterName] = useState<string>('Anonymous');
+  // One vote per phone: a persistent anonymous device id (not tied to any
+  // account), generated once and reused for the lifetime of this browser.
+  // The server uses this to let you change your vote instead of stacking
+  // additional votes on every refresh/re-submit.
+  const [deviceId] = useState<string>(() => {
+    try {
+      const existing = localStorage.getItem('jab_matched_device_id');
+      if (existing) return existing;
+      const fresh =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `dev-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+      localStorage.setItem('jab_matched_device_id', fresh);
+      return fresh;
+    } catch {
+      return `dev-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+    }
   });
   const [myVotes, setMyVotes] = useState<Record<string, { optionId: string; userRequiredInput: UserVoteInput }>>(() => {
     try {
@@ -213,12 +232,6 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const wsRef = useRef<WebSocket | null>(null);
-
-  const setVoterName = (name: string) => {
-    const trimmed = name.trim() || 'Audience Matchmaker';
-    setVoterNameState(trimmed);
-    localStorage.setItem('jab_matched_voter_name', trimmed);
-  };
 
   const setSoundEnabled = (enabled: boolean) => {
     setSoundEnabledState(enabled);
@@ -360,7 +373,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // WebSocket Connection (Auto-reconnecting for 500 mobile audience devices)
+  // WebSocket Connection (Auto-reconnecting for 700 mobile audience devices)
   useEffect(() => {
     let reconnectTimeout: ReturnType<typeof setTimeout>;
     let isSubscribed = true;
@@ -585,6 +598,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
           optionId,
           voterName: input.voterName || voterName,
           userRequiredInput: input,
+          deviceId,
         }),
       });
 
@@ -613,7 +627,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, deviceId }),
       });
 
       if (!res.ok) {
@@ -993,7 +1007,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     await simulateSpectators(15);
   };
 
-  // Simulate larger batches of spectators (50, 100, 250, 500)
+  // Simulate larger batches of spectators (50, 100, 250, 700)
   const simulateSpectators = async (count = 100) => {
     try {
       const targetId = state.activePollId;
@@ -1025,7 +1039,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
         activeView,
         setActiveView,
         voterName,
-        setVoterName,
+        deviceId,
         myVotes,
         activeBursts,
         soundEnabled,

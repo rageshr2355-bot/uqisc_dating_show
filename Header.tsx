@@ -9,7 +9,6 @@ import {
   Sparkles, 
   Check, 
   Radio,
-  Heart,
   QrCode,
   Globe,
   Copy,
@@ -21,7 +20,6 @@ export function Header() {
   const { 
     activeView, 
     setActiveView, 
-    voterName, 
     state,
     isConnected,
     isAdmin,
@@ -62,9 +60,10 @@ export function Header() {
 
         {/* Center View Selector Tabs — Stage & Host only ever render here
             once the admin passphrase has been entered on this device. A
-            non-admin visitor (e.g. anyone who scanned the QR code) sees a
-            plain "Audience Pad" badge with no way to reach the other views. */}
-        {isAdmin ? (
+            non-admin visitor (e.g. anyone who scanned the QR code) sees
+            nothing here — no badge, no button, no way to reach the other
+            views. */}
+        {isAdmin && (
           <div className="flex items-center p-1 rounded-xl bg-[#30030a]/80 border border-pink-400/30 shadow-inner">
             <button
               id="tab-audience-view"
@@ -105,16 +104,11 @@ export function Header() {
               <span>Host Console</span>
             </button>
           </div>
-        ) : (
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#30030a]/80 border border-pink-400/30 shadow-inner text-xs font-bold tracking-wide text-pink-100">
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Audience Pad</span>
-          </div>
         )}
 
         {/* Right Info, Profile & Controls */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-          {/* Active Audience Connection indicator (Designed for 500 spectators) */}
+          {/* Active Audience Connection indicator (Designed for 700 spectators) */}
           <div className="hidden lg:flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#35040d]/90 border border-pink-400/30 text-pink-100 text-xs">
             <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
             <Users className="w-3.5 h-3.5 text-pink-300" />
@@ -170,14 +164,6 @@ export function Header() {
             <span className="hidden sm:inline">Confessions</span>
           </button>
 
-          {/* Voter Screen Name — random per-device, never editable */}
-          <div className="flex items-center">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#30030a]/90 border border-pink-400/25 text-xs shadow-sm">
-              <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
-              <span className="text-pink-200/80">Voting:</span>
-              <span className="font-bold text-pink-100 max-w-[110px] truncate">{voterName}</span>
-            </div>
-          </div>
         </div>
       </div>
     </header>

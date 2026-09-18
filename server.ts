@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import path from 'path';
+import fs from 'fs';
 import crypto from 'crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer as createViteServer } from 'vite';
@@ -16,6 +17,44 @@ import { createServer as createViteServer } from 'vite';
 // passphrase is generated at startup and printed below — copy it from the
 // server logs before the event.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// SWEAR-WORD FILTER
+//
+// Applied to anything an anonymous audience member types that can end up on
+// the Stage Screen: confessions, and write-in nominee names/descriptions.
+// Whole-word, case-insensitive matching (so "assassin" or "class" don't
+// trip on substrings). This is a practical blocklist for a live college
+// event, not an exhaustive or clever filter — the host's moderation queue
+// (for confessions) remains the real backstop.
+// ---------------------------------------------------------------------------
+const PROFANITY_LIST = [
+  'fuck', 'fucking', 'fucker', 'motherfucker',
+  'shit', 'bullshit', 'shitty',
+  'bitch', 'bitches',
+  'asshole', 'ass',
+  'bastard',
+  'cunt',
+  'dick', 'dickhead',
+  'piss', 'pissed',
+  'slut', 'whore',
+  'cock',
+  'twat',
+  'wanker',
+  'nigger', 'nigga',
+  'faggot', 'fag',
+  'retard', 'retarded',
+  'rape', 'rapist',
+];
+const PROFANITY_REGEX = new RegExp(
+  `\\b(${PROFANITY_LIST.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
+  'i'
+);
+
+function containsProfanity(text: string): boolean {
+  if (!text) return false;
+  return PROFANITY_REGEX.test(text);
+}
+
 const ADMIN_KEY = (process.env.ADMIN_KEY || '').trim() || crypto.randomBytes(4).toString('hex');
 const ADMIN_SESSION_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
 const adminSessions = new Map<string, number>(); // token -> expiresAt
@@ -109,7 +148,7 @@ const INITIAL_POLLS: PollQuestion[] = [
     category: 'hideaway',
     categoryLabel: '💌 THE RED ENVELOPE MATCH',
     title: "Who Should Win Tonight's Grand Candlelit Date Night?",
-    prompt: "Tonight at 'Jab We Matched', 500 spectators decide which newly paired couple unseals the Red Envelope to win the VIP romantic dinner table and roses!",
+    prompt: "Tonight at 'Jab We Matched', 700 spectators decide which newly paired couple unseals the Red Envelope to win the VIP romantic dinner table and roses!",
     requiresVoterInput: true,
     inputPromptText: 'Spectator Hot Take Required: Why does this couple belong together?',
     allowAudienceOptions: true,
@@ -240,7 +279,7 @@ const INITIAL_POLLS: PollQuestion[] = [
     category: 'recoupling',
     categoryLabel: '⚡ THE WILDCARD MATCHMAKER BUTTON',
     title: 'Should The Mystery Audience Member Challenge The Stage Match?',
-    prompt: 'Someone in row 4 has declared they have an unresolved confession for one of the stage contestants! Do the 500 spectators give them the microphone?',
+    prompt: 'Someone in row 4 has declared they have an unresolved confession for one of the stage contestants! Do the 700 spectators give them the microphone?',
     requiresVoterInput: true,
     inputPromptText: 'Why vote this way? Share your reaction with the host:',
     allowAudienceOptions: true,
@@ -297,22 +336,108 @@ const INITIAL_HOT_TAKES: AudienceHotTake[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// PERSISTENCE
+//
+// Everything below survives a process restart (a crash, a manual restart
+// during the food break, a redeploy) by round-tripping through a JSON file.
+// NOTE: this only actually survives on Render if a persistent Disk is
+// attached and mounted at DATA_DIR — Render's default filesystem is wiped
+// on every restart/redeploy. Without a disk, this still helps for in-place
+// crashes that don't recreate the container, but not for a real redeploy.
+// ---------------------------------------------------------------------------
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'state.json');
+
+function ensureDataDir() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (err) {
+    console.error('Could not create data directory:', err);
+  }
+}
+
+let saveTimer: NodeJS.Timeout | null = null;
+function scheduleSave() {
+  // Debounced — coalesces a burst of votes/edits into one disk write rather
+  // than hammering the disk on every single request.
+  if (saveTimer) return;
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    persistNow();
+  }, 1000);
+}
+
+function persistNow() {
+  try {
+    ensureDataDir();
+    const snapshot = {
+      polls: state.polls,
+      activePollId: state.activePollId,
+      hotTakes: state.hotTakes,
+      reactionCounts: state.reactionCounts,
+      featuredConfessionId: state.featuredConfessionId,
+      confessionsBoardActive: state.confessionsBoardActive,
+      waitingScreenActive: state.waitingScreenActive,
+      confessions,
+      voteRegistry,
+      savedAt: new Date().toISOString(),
+    };
+    const tmpFile = `${DATA_FILE}.tmp`;
+    fs.writeFileSync(tmpFile, JSON.stringify(snapshot));
+    fs.renameSync(tmpFile, DATA_FILE); // atomic on the same filesystem
+  } catch (err) {
+    console.error('Failed to save state to disk:', err);
+  }
+}
+
+function loadPersistedState(): Partial<{
+  polls: PollQuestion[];
+  activePollId: string;
+  hotTakes: AudienceHotTake[];
+  reactionCounts: Record<string, number>;
+  featuredConfessionId: string | null;
+  confessionsBoardActive: boolean;
+  waitingScreenActive: boolean;
+  confessions: Confession[];
+  voteRegistry: Record<string, Record<string, string>>;
+}> | null {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return null;
+    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Failed to load persisted state (starting fresh):', err);
+    return null;
+  }
+}
+
+const persisted = loadPersistedState();
+
 // Anonymous Confessions — held OUTSIDE `state` on purpose. `state` gets
-// spread wholesale into every broadcast and into GET /api/state, which every
-// connected client (including anonymous audience members) receives — so
-// anything unmoderated must never live there. Confessions start 'pending'
-// and only become visible to the public once a host approves them; the host
-// console fetches the full pending/approved/rejected list separately over an
-// admin-authenticated endpoint, never over the public broadcast.
+// broadcast wholesale into every broadcast and into GET /api/state, which
+// every connected client (including anonymous audience members) receives —
+// so anything unmoderated must never live there. Confessions start
+// 'pending' and only become visible to the public once a host approves
+// them; the host console fetches the full pending/approved/rejected list
+// separately over an admin-authenticated endpoint, never over the public
+// broadcast.
 interface Confession {
   id: string;
   text: string;
   createdAt: number;
   status: 'pending' | 'approved' | 'rejected';
 }
-let confessions: Confession[] = [];
+let confessions: Confession[] = persisted?.confessions || [];
 const MAX_STORED_CONFESSIONS = 500; // cap memory growth over a long event
 const MAX_PUBLIC_CONFESSIONS = 60; // cap what's ever sent to the public feed
+
+// One vote per device per poll: pollId -> deviceId -> the optionId they
+// currently have selected. Voting again just moves this pointer and
+// adjusts the counts — it no longer adds a second vote.
+let voteRegistry: Record<string, Record<string, string>> = persisted?.voteRegistry || {};
 
 function getPublicConfessions() {
   return confessions
@@ -326,23 +451,25 @@ function publicState() {
 
 // App Server State
 const state = {
-  polls: JSON.parse(JSON.stringify(INITIAL_POLLS)) as PollQuestion[],
-  activePollId: 'poll-envelope-1',
-  hotTakes: JSON.parse(JSON.stringify(INITIAL_HOT_TAKES)) as AudienceHotTake[],
-  reactionCounts: {
+  polls: persisted?.polls || (JSON.parse(JSON.stringify(INITIAL_POLLS)) as PollQuestion[]),
+  activePollId: persisted?.activePollId || 'poll-envelope-1',
+  hotTakes: persisted?.hotTakes || (JSON.parse(JSON.stringify(INITIAL_HOT_TAKES)) as AudienceHotTake[]),
+  reactionCounts: (persisted?.reactionCounts || {
     '🌹': 342,
     '🚩': 215,
     '🔥': 489,
     '💔': 118,
     '🍿': 276,
     '💖': 512,
-  } as Record<string, number>,
-  featuredConfessionId: null as string | null,
-  confessionsBoardActive: false,
-  waitingScreenActive: false,
+  }) as Record<string, number>,
+  featuredConfessionId: persisted?.featuredConfessionId ?? null as string | null,
+  confessionsBoardActive: persisted?.confessionsBoardActive ?? false,
+  // Defaults to true: a fresh boot always starts on the audience's "Hang
+  // Tight" waiting screen until the host explicitly pushes a question live.
+  waitingScreenActive: persisted?.waitingScreenActive ?? true,
 };
 
-// Batching buffer for 500-spectator reaction bursts
+// Batching buffer for 700-spectator reaction bursts
 interface PendingBurst {
   id: string;
   emoji: string;
@@ -395,14 +522,14 @@ async function startServer() {
     return res.json({ success: true });
   });
 
-  // WebSocket Server optimized for 500+ clients
+  // WebSocket Server optimized for 700+ clients
   const wss = new WebSocketServer({ 
     server,
-    // Per-message deflate disabled to save CPU during mass broadcast to 500 sockets
+    // Per-message deflate disabled to save CPU during mass broadcast to 700 sockets
     perMessageDeflate: false 
   });
 
-  // Pre-serialized broadcast function to prevent running JSON.stringify 500 times
+  // Pre-serialized broadcast function to prevent running JSON.stringify 700 times
   function broadcastPreSerialized(message: string) {
     for (const client of wss.clients) {
       if (client.readyState === WebSocket.OPEN && client.bufferedAmount < 64 * 1024) {
@@ -419,6 +546,25 @@ async function startServer() {
   function getConnectedCount() {
     // Show connected count or floor of active spectators
     return Math.max(1, wss.clients.size);
+  }
+
+  // Real debounce for the audience-count broadcast. Previously this fired
+  // an immediate broadcast() on every single connect/close event — with
+  // ~700 phones connecting in the same few seconds (everyone scanning the
+  // QR code at once), that's up to ~700 broadcasts each fanning out to up
+  // to ~700 sockets: a genuine O(n²) message storm. Now any burst of
+  // connect/close events within the window collapses into exactly one
+  // broadcast carrying the final count.
+  let audienceCountBroadcastTimer: NodeJS.Timeout | null = null;
+  function scheduleAudienceCountBroadcast() {
+    if (audienceCountBroadcastTimer) return;
+    audienceCountBroadcastTimer = setTimeout(() => {
+      audienceCountBroadcastTimer = null;
+      broadcast({
+        type: 'AUDIENCE_COUNT_UPDATED',
+        payload: { count: getConnectedCount() },
+      });
+    }, 400);
   }
 
   // Heartbeat interval to cleanly prune dead mobile sockets and maintain accurate spectator count
@@ -452,17 +598,11 @@ async function startServer() {
     });
     ws.send(initMessage);
 
-    // Debounced broadcast of audience count to avoid spamming on 500 rapid connections
-    broadcast({
-      type: 'AUDIENCE_COUNT_UPDATED',
-      payload: { count: getConnectedCount() },
-    });
+    // Debounced — see scheduleAudienceCountBroadcast above
+    scheduleAudienceCountBroadcast();
 
     ws.on('close', () => {
-      broadcast({
-        type: 'AUDIENCE_COUNT_UPDATED',
-        payload: { count: getConnectedCount() },
-      });
+      scheduleAudienceCountBroadcast();
     });
 
     ws.on('error', () => {
@@ -470,7 +610,7 @@ async function startServer() {
     });
   });
 
-  // Reaction batching timer: Flushes emoji reaction bursts every 120ms to all 500 clients
+  // Reaction batching timer: Flushes emoji reaction bursts every 120ms to all 700 clients
   setInterval(() => {
     if (pendingReactions.length === 0) return;
 
@@ -541,15 +681,19 @@ async function startServer() {
 
   // Cast a Vote (with required voter hot take)
   app.post('/api/vote', (req, res) => {
-    const { pollId, optionId, voterName, userRequiredInput } = req.body as {
+    const { pollId, optionId, voterName, userRequiredInput, deviceId } = req.body as {
       pollId: string;
       optionId: string;
       voterName: string;
       userRequiredInput?: UserVoteInput;
+      deviceId?: string;
     };
 
     if (!pollId || !optionId) {
       return res.status(400).json({ error: 'Missing pollId or optionId' });
+    }
+    if (!deviceId) {
+      return res.status(400).json({ error: 'Missing deviceId' });
     }
 
     const poll = state.polls.find((p) => p.id === pollId);
@@ -563,22 +707,26 @@ async function startServer() {
 
     let option = poll.options.find((o) => o.id === optionId);
 
-    // If voting on write-in option, append or update nominee
+    // If voting on write-in option, append or update nominee (resolve which
+    // option this vote actually targets — don't touch counts yet, that
+    // happens uniformly below via the one-vote-per-device logic).
     if (option?.requiresWriteIn && userRequiredInput?.customWriteIn) {
       const customText = userRequiredInput.customWriteIn.trim();
       if (customText) {
+        if (containsProfanity(customText)) {
+          return res.status(400).json({ error: 'Please keep nominations family-friendly.' });
+        }
         const existingCustom = poll.options.find(
           (o) => o.label.toLowerCase() === customText.toLowerCase()
         );
         if (existingCustom) {
-          existingCustom.votes += 1;
           option = existingCustom;
         } else {
           const newCustomOpt: PollOption = {
             id: `opt-custom-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             label: customText,
             description: `Audience Matchmaker nominee by ${voterName || 'Secret Matchmaker'}`,
-            votes: 1,
+            votes: 0,
             isUserCreated: true,
             createdBy: voterName,
             tag: 'Audience Matchmaker ✍️',
@@ -586,21 +734,36 @@ async function startServer() {
           poll.options.push(newCustomOpt);
           option = newCustomOpt;
         }
-      } else {
-        option.votes += 1;
       }
-    } else if (option) {
-      option.votes += 1;
-    } else {
+    }
+
+    if (!option) {
       return res.status(404).json({ error: 'Option not found' });
     }
 
-    poll.totalVotes += 1;
+    // One vote per device per poll. Voting again just moves your vote —
+    // it no longer stacks additional votes on refresh/re-submit.
+    const pollVotes = voteRegistry[pollId] || (voteRegistry[pollId] = {});
+    const previousOptionId = pollVotes[deviceId];
 
-    // Record Audience Hot Take
+    if (previousOptionId !== option.id) {
+      if (previousOptionId) {
+        const previousOption = poll.options.find((o) => o.id === previousOptionId);
+        if (previousOption) {
+          previousOption.votes = Math.max(0, previousOption.votes - 1);
+          poll.totalVotes = Math.max(0, poll.totalVotes - 1);
+        }
+      }
+      option.votes += 1;
+      poll.totalVotes += 1;
+      pollVotes[deviceId] = option.id;
+    }
+
+    // Record Audience Hot Take (optional commentary — filtered, but never
+    // blocks the vote itself; a flagged hot take is just dropped silently)
     let newHotTake: AudienceHotTake | null = null;
     const hotTakeText = userRequiredInput?.hotTake?.trim();
-    if (hotTakeText) {
+    if (hotTakeText && !containsProfanity(hotTakeText)) {
       newHotTake = {
         id: `ht-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
         pollId,
@@ -616,7 +779,9 @@ async function startServer() {
       }
     }
 
-    // Schedule debounced broadcast so 500 concurrent voters don't overwhelm network
+    scheduleSave();
+
+    // Schedule debounced broadcast so 700 concurrent voters don't overwhelm network
     scheduleVoteBroadcast(pollId, newHotTake);
 
     return res.json({
@@ -628,16 +793,23 @@ async function startServer() {
 
   // Audience adds a new Option to the ballot
   app.post('/api/options', (req, res) => {
-    const { pollId, label, description, createdBy, tag } = req.body as {
+    const { pollId, label, description, createdBy, tag, deviceId } = req.body as {
       pollId: string;
       label: string;
       description?: string;
       createdBy?: string;
       tag?: string;
+      deviceId?: string;
     };
 
     if (!pollId || !label?.trim()) {
       return res.status(400).json({ error: 'Missing pollId or option label' });
+    }
+    if (!deviceId) {
+      return res.status(400).json({ error: 'Missing deviceId' });
+    }
+    if (containsProfanity(label) || containsProfanity(description || '')) {
+      return res.status(400).json({ error: 'Please keep nominations family-friendly.' });
     }
 
     const poll = state.polls.find((p) => p.id === pollId);
@@ -653,14 +825,31 @@ async function startServer() {
       id: `opt-aud-${Date.now()}`,
       label: label.trim(),
       description: description?.trim() || `Nominated live by spectator ${createdBy || 'Matchmaker'}`,
-      votes: 1,
+      votes: 0,
       isUserCreated: true,
       createdBy: createdBy || 'Spectator',
       tag: tag?.trim() || 'Crowd Nominee 🌟',
     };
 
     poll.options.push(newOption);
+
+    // Nominating counts as this device's vote for their own nomination —
+    // same one-vote-per-device rule as regular voting, so repeat
+    // submissions can't stack free votes.
+    const pollVotes = voteRegistry[pollId] || (voteRegistry[pollId] = {});
+    const previousOptionId = pollVotes[deviceId];
+    if (previousOptionId) {
+      const previousOption = poll.options.find((o) => o.id === previousOptionId);
+      if (previousOption) {
+        previousOption.votes = Math.max(0, previousOption.votes - 1);
+        poll.totalVotes = Math.max(0, poll.totalVotes - 1);
+      }
+    }
+    newOption.votes = 1;
     poll.totalVotes += 1;
+    pollVotes[deviceId] = newOption.id;
+
+    scheduleSave();
 
     broadcast({
       type: 'OPTION_ADDED',
@@ -674,8 +863,10 @@ async function startServer() {
     return res.json({ success: true, poll, option: newOption });
   });
 
-  // Create a new question (Host or Audience submission)
-  app.post('/api/questions', (req, res) => {
+  // Create a new question — host-only. This used to be open to anyone
+  // (an "audience can suggest a question" feature) and it went straight
+  // live on every phone the moment it was submitted — that's now closed.
+  app.post('/api/questions', requireAdmin, (req, res) => {
     const {
       title,
       prompt,
@@ -716,6 +907,7 @@ async function startServer() {
 
     state.polls.unshift(newPoll);
     state.activePollId = newPoll.id;
+    scheduleSave();
 
     broadcast({
       type: 'QUESTION_CREATED',
@@ -772,6 +964,8 @@ async function startServer() {
       poll.totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
     }
 
+    scheduleSave();
+
     broadcast({
       type: 'QUESTION_UPDATED',
       payload: { poll },
@@ -826,6 +1020,8 @@ async function startServer() {
       poll.totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
     }
 
+    scheduleSave();
+
     broadcast({
       type: 'QUESTION_UPDATED',
       payload: { poll },
@@ -846,6 +1042,7 @@ async function startServer() {
       poll.options.forEach((opt) => {
         delete opt.avatarUrl;
       });
+      scheduleSave();
       broadcast({
         type: 'PFPS_REMOVED',
         payload: { pollId, poll },
@@ -858,6 +1055,7 @@ async function startServer() {
           delete opt.avatarUrl;
         });
       });
+      scheduleSave();
       broadcast({
         type: 'PFPS_REMOVED',
         payload: { pollId: null, polls: state.polls },
@@ -882,6 +1080,7 @@ async function startServer() {
     if (state.activePollId === pollId) {
       state.activePollId = state.polls[0].id;
     }
+    scheduleSave();
 
     broadcast({
       type: 'QUESTION_DELETED',
@@ -906,6 +1105,7 @@ async function startServer() {
     if (state.activePollId === pollId) {
       state.activePollId = state.polls[0].id;
     }
+    scheduleSave();
 
     broadcast({
       type: 'QUESTION_DELETED',
@@ -915,7 +1115,7 @@ async function startServer() {
     return res.json({ success: true, activePollId: state.activePollId });
   });
 
-  // Audience Emoji Reaction Burst (Batched for 500 users)
+  // Audience Emoji Reaction Burst (Batched for 700 users)
   app.post('/api/reaction', (req, res) => {
     const { emoji, label } = req.body as { emoji: string; label?: string };
     if (!emoji) {
@@ -954,6 +1154,9 @@ async function startServer() {
     if (trimmed.length > 300) {
       return res.status(400).json({ error: 'Keep it under 300 characters' });
     }
+    if (containsProfanity(trimmed)) {
+      return res.status(400).json({ error: 'Please keep it clean — that included flagged language.' });
+    }
 
     const confession: Confession = {
       id: `conf-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
@@ -965,6 +1168,7 @@ async function startServer() {
     if (confessions.length > MAX_STORED_CONFESSIONS) {
       confessions = confessions.slice(-MAX_STORED_CONFESSIONS);
     }
+    scheduleSave();
 
     // Deliberately NOT broadcast to the public socket — it's only visible
     // to the host, who polls GET /api/host/confessions to review it.
@@ -983,6 +1187,7 @@ async function startServer() {
       return res.status(404).json({ error: 'Confession not found' });
     }
     confession.status = 'approved';
+    scheduleSave();
     broadcast({
       type: 'CONFESSIONS_UPDATED',
       payload: { confessions: getPublicConfessions() },
@@ -999,6 +1204,7 @@ async function startServer() {
     }
     const wasApproved = confession.status === 'approved';
     confession.status = 'rejected';
+    scheduleSave();
     // A rejected/pulled confession can never stay highlighted on the big screen board
     if (state.featuredConfessionId === confession.id) {
       state.featuredConfessionId = null;
@@ -1031,6 +1237,7 @@ async function startServer() {
     }
     state.featuredConfessionId = confession.id;
     state.confessionsBoardActive = true;
+    scheduleSave();
     broadcast({
       type: 'CONFESSIONS_UPDATED',
       payload: {
@@ -1046,6 +1253,7 @@ async function startServer() {
   app.post('/api/host/confessions/clear-launch', requireAdmin, (req, res) => {
     state.featuredConfessionId = null;
     state.confessionsBoardActive = false;
+    scheduleSave();
     broadcast({
       type: 'CONFESSIONS_UPDATED',
       payload: { confessions: getPublicConfessions(), featuredConfessionId: null, confessionsBoardActive: false },
@@ -1058,6 +1266,7 @@ async function startServer() {
   app.post('/api/host/waiting-screen', requireAdmin, (req, res) => {
     const { active } = req.body as { active?: boolean };
     state.waitingScreenActive = Boolean(active);
+    scheduleSave();
     broadcast({
       type: 'WAITING_SCREEN_CHANGED',
       payload: { waitingScreenActive: state.waitingScreenActive },
@@ -1074,11 +1283,22 @@ async function startServer() {
     }
 
     state.activePollId = pollId;
+    // Pushing a question live is what ends the waiting screen — the
+    // Audience Pad defaults to "Hang Tight" on every boot until this happens.
+    const wasWaiting = state.waitingScreenActive;
+    state.waitingScreenActive = false;
+    scheduleSave();
 
     broadcast({
       type: 'POLL_CHANGED',
       payload: { activePollId: pollId },
     });
+    if (wasWaiting) {
+      broadcast({
+        type: 'WAITING_SCREEN_CHANGED',
+        payload: { waitingScreenActive: false },
+      });
+    }
 
     return res.json({ success: true, activePollId: pollId });
   });
@@ -1103,6 +1323,7 @@ async function startServer() {
         poll.winnerOptionId = sorted[0].id;
       }
     }
+    scheduleSave();
 
     broadcast({
       type: 'STATUS_CHANGED',
@@ -1125,6 +1346,8 @@ async function startServer() {
         p.winnerOptionId = undefined;
       });
       state.hotTakes = [];
+      voteRegistry = {}; // every device's vote pointer is stale after a full reset
+      scheduleSave();
 
       broadcast({
         type: 'POLL_RESET',
@@ -1145,9 +1368,11 @@ async function startServer() {
     poll.totalVotes = 0;
     poll.status = 'active';
     poll.winnerOptionId = undefined;
+    delete voteRegistry[pollId]; // this poll's device vote pointers are stale now
 
     // Clear hot takes associated with this reset question so the live tickers refresh
     state.hotTakes = state.hotTakes.filter((h) => h.pollId !== pollId);
+    scheduleSave();
 
     broadcast({
       type: 'POLL_RESET',
@@ -1172,7 +1397,7 @@ async function startServer() {
     return handleResetPoll(req.params.id, res);
   });
 
-  // Host Controls: Simulate 500 Spectators (Stress-Test & Live Demo)
+  // Host Controls: Simulate 700 Spectators (Stress-Test & Live Demo)
   app.post('/api/host/simulate-spectators', requireAdmin, (req, res) => {
     const { pollId, count = 100 } = req.body as { pollId?: string; count?: number };
     const poll = state.polls.find((p) => p.id === (pollId || state.activePollId));
@@ -1180,7 +1405,7 @@ async function startServer() {
       return res.status(404).json({ error: 'Poll not found' });
     }
 
-    const votesToAdd = Math.min(500, Math.max(10, count));
+    const votesToAdd = Math.min(700, Math.max(10, count));
 
     const sampleTakes = [
       'Pure Bollywood cinema! If this couple does not win, the whole hall will riot.',
@@ -1225,6 +1450,7 @@ async function startServer() {
       state.hotTakes.unshift(take);
     }
     state.hotTakes = state.hotTakes.slice(0, 60);
+    scheduleSave();
 
     broadcast({
       type: 'VOTE_RECORDED',
@@ -1255,7 +1481,7 @@ async function startServer() {
   }
 
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Jab We Matched Live Polling server (500-spectator scale ready) running at http://0.0.0.0:${PORT}`);
+    console.log(`Jab We Matched Live Polling server (700-spectator scale ready) running at http://0.0.0.0:${PORT}`);
     console.log('');
     console.log('================================================================');
     console.log('  ADMIN ACCESS — Stage Screen & Host Console');
@@ -1269,8 +1495,27 @@ async function startServer() {
     console.log('  The Audience Pad (?view=audience, the QR code link) never');
     console.log('  needs it and never shows a way to reach the other views.');
     console.log('================================================================');
+    if (persisted) {
+      console.log(`  Restored saved state from ${DATA_FILE} (saved ${persisted && (persisted as any).savedAt ? (persisted as any).savedAt : 'unknown time'})`);
+    } else {
+      console.log(`  No saved state found at ${DATA_FILE} — starting fresh.`);
+      console.log('  NOTE: on Render, this file only survives real restarts if a');
+      console.log('  persistent Disk is attached and mounted at DATA_DIR.');
+    }
+    console.log('================================================================');
     console.log('');
   });
+
+  // Flush a final save on graceful shutdown (Render sends SIGTERM before
+  // stopping/redeploying a service) so nothing from the last few seconds
+  // before a restart gets lost to the debounce window.
+  const shutdown = () => {
+    console.log('Shutting down — saving state...');
+    persistNow();
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 startServer();

@@ -148,7 +148,7 @@ export function StageDisplayView() {
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/80 border border-pink-400/60 shadow-lg shadow-red-950/60">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
               <span className="text-xs font-black text-pink-100 tracking-wider uppercase font-mono">
-                💌 500 SPECTATOR BALLOT OPEN
+                💌 700 SPECTATOR BALLOT OPEN
               </span>
             </div>
           )}
@@ -265,7 +265,7 @@ export function StageDisplayView() {
                 THE RED ENVELOPE IS SEALED
               </h2>
               <p className="text-sm text-pink-200 mt-1 max-w-md">
-                500 spectator votes have been recorded! The hosts are preparing to reveal the official matchmaking verdict.
+                700 spectator votes have been recorded! The hosts are preparing to reveal the official matchmaking verdict.
               </p>
               <button
                 id="stage-reveal-winner-btn"
@@ -292,7 +292,7 @@ export function StageDisplayView() {
             </div>
 
             <div className="text-xs font-mono font-black tracking-widest text-pink-200 uppercase mb-1">
-              THE 500 SPECTATORS HAVE DECIDED
+              THE 700 SPECTATORS HAVE DECIDED
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-black text-white font-matched tracking-wide matched-3d-text-lg">

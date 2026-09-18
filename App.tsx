@@ -74,7 +74,7 @@ function AppContent() {
             <span className="text-pink-400/40">•</span>
             <span className="text-pink-200 font-medium">Auditorium Dating Show & Question Polling</span>
             <span className="text-pink-400/40">•</span>
-            <span className="text-pink-300/80 font-mono text-[11px]">500 Spectator Live Engine</span>
+            <span className="text-pink-300/80 font-mono text-[11px]">700 Spectator Live Engine</span>
           </div>
 
           {/* Quick View Switcher Footer Links — Stage & Host only ever

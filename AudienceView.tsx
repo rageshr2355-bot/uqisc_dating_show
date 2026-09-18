@@ -31,7 +31,6 @@ export function AudienceView() {
   const { 
     activePoll, 
     voterName, 
-    setVoterName,
     myVotes, 
     castVote, 
     addAudienceOption, 
@@ -108,9 +107,25 @@ export function AudienceView() {
           <h2 className="text-xl sm:text-2xl font-black font-matched text-white matched-3d-text uppercase tracking-wide mb-2">
             Hang Tight
           </h2>
-          <p className="text-sm text-pink-50/90 leading-relaxed">
+          <p className="text-sm text-pink-50/90 leading-relaxed mb-6">
             The next ballot is coming up shortly — keep your eyes on the stage!
           </p>
+
+          {/* Confessions stay open even while waiting — send only, no list to browse */}
+          <div className="p-4 rounded-3xl bg-[#2b0309]/90 border border-purple-300/25 text-left">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-purple-200 font-mono uppercase tracking-wider mb-3 justify-center">
+              <Mail className="w-4 h-4 text-purple-300" />
+              <span>Got a Confession?</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsConfessionModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 via-fuchsia-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 border border-white/80 text-white text-xs font-black uppercase tracking-wider shadow-md transition-all hover:scale-[1.01]"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>Send an Anonymous Confession</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -345,7 +360,7 @@ export function AudienceView() {
                 The Red Envelope Is Sealed!
               </h4>
               <p className="text-xs text-pink-200">
-                Voting is officially locked while the hosts count the 500 spectator votes. Watch the stage screen for the grand reveal!
+                Voting is officially locked while the hosts count the 700 spectator votes. Watch the stage screen for the grand reveal!
               </p>
             </div>
           </div>
@@ -658,7 +673,7 @@ export function AudienceView() {
                   type="text"
                   value={newOptionDesc}
                   onChange={(e) => setNewOptionDesc(e.target.value)}
-                  placeholder="Why should the 500 spectators vote for them?"
+                  placeholder="Why should the 700 spectators vote for them?"
                   maxLength={120}
                   className="w-full px-3 py-2 rounded-xl bg-black/50 border border-pink-300/40 text-white text-xs focus:outline-none focus:ring-1 focus:ring-pink-300"
                 />
