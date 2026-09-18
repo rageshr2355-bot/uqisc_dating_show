@@ -206,11 +206,11 @@ export function HostControls() {
             <div className="text-xs font-script text-pink-200 tracking-widest drop-shadow mb-0.5">
               uqisc presents • backstage director deck
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black font-matched text-white matched-3d-text uppercase tracking-wider">
+            <h1 className="text-2xl sm:text-3xl font-black font-display text-white">
               JAB WE MATCHED HOST CONTROLS
             </h1>
             <p className="text-xs text-pink-200/90 font-medium">
-              Manage live auditorium ballots, lock/unseal the red envelope, and monitor 700 spectator connections.
+              Push questions to the stage and phones, lock and reveal results, and moderate confessions.
             </p>
           </div>
 
@@ -222,7 +222,7 @@ export function HostControls() {
                 ? 'bg-amber-500 hover:bg-amber-400 border-white text-black'
                 : 'bg-black/40 hover:bg-black/60 border-pink-400/40 text-pink-200 hover:text-white'
             }`}
-            title="Show a waiting screen on the Audience Pad instead of the live ballot"
+            title="Take the current question off the stage and every phone"
           >
             <Clock className="w-4 h-4" />
             <span>{state.waitingScreenActive ? 'Waiting Screen ON — Click to Hide' : 'Show Waiting Screen'}</span>
@@ -230,26 +230,26 @@ export function HostControls() {
         </div>
 
         {/* Anonymous Confessions Moderation Queue */}
-        <div className="p-5 rounded-3xl bg-gradient-to-r from-[#3a0a4a] via-[#2e0838] via-40% to-[#3b040e] border-2 border-purple-300 shadow-xl">
-          <div className="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-purple-400/20">
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-[#3b040e] via-[#30030a] via-40% to-[#3b040e] border-2 border-pink-300 shadow-xl">
+          <div className="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-pink-400/20">
             <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-purple-300" />
-              <h3 className="font-bold text-white text-sm font-matched uppercase tracking-wider">
+              <Mail className="w-4 h-4 text-pink-300" />
+              <h3 className="font-bold text-white text-sm font-display">
                 Confessions Moderation
               </h3>
               {pendingConfessions.filter((c) => c.status === 'pending').length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-black font-mono animate-pulse">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-black animate-pulse">
                   {pendingConfessions.filter((c) => c.status === 'pending').length} WAITING
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-purple-200/70 hidden sm:block">
+            <p className="text-[11px] text-pink-200/70 hidden sm:block">
               Nothing reaches the audience or stage until you approve it here.
             </p>
           </div>
 
           {pendingConfessions.filter((c) => c.status === 'pending').length === 0 ? (
-            <p className="text-xs text-purple-300/60 italic text-center py-4">
+            <p className="text-xs text-pink-300/60 italic text-center py-4">
               No confessions waiting for review right now.
             </p>
           ) : (
@@ -259,16 +259,16 @@ export function HostControls() {
                 .map((confession) => (
                   <div
                     key={confession.id}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-black/40 border border-purple-400/25"
+                    className="flex items-start gap-3 p-3 rounded-xl bg-black/40 border border-pink-400/25"
                   >
-                    <p className="flex-1 text-sm text-purple-50 italic leading-relaxed">
+                    <p className="flex-1 text-sm text-pink-50 italic leading-relaxed">
                       "{confession.text}"
                     </p>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleApproveConfession(confession.id)}
                         disabled={moderatingId === confession.id}
-                        className="p-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 border border-emerald-300/50 text-white transition-colors disabled:opacity-50"
+                        className="p-2 rounded-lg bg-pink-200 hover:bg-pink-200 border border-white text-white transition-colors disabled:opacity-50"
                         title="Approve — shows on audience feed & stage screen"
                       >
                         <Check className="w-4 h-4" />
@@ -288,9 +288,9 @@ export function HostControls() {
           )}
 
           {pendingConfessions.filter((c) => c.status === 'approved').length > 0 && (
-            <div className="mt-4 pt-4 border-t border-purple-400/20">
+            <div className="mt-4 pt-4 border-t border-pink-400/20">
               <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                <p className="text-[11px] font-bold text-purple-200/80 uppercase tracking-wider">
+                <p className="text-[11px] font-bold text-pink-200/80 uppercase tracking-wider">
                   Approved confessions — launch one to the big screen
                 </p>
                 {state.confessionsBoardActive && (
@@ -311,18 +311,18 @@ export function HostControls() {
                           <button
                             onClick={() => goTo(-1)}
                             disabled={isLaunching || currentIndex === -1}
-                            className="p-1.5 rounded-lg bg-purple-800 hover:bg-purple-700 border border-purple-300/40 text-white transition-colors disabled:opacity-40"
+                            className="p-1.5 rounded-lg bg-pink-800 hover:bg-pink-700 border border-pink-300/40 text-white transition-colors disabled:opacity-40"
                             title="Previous confession"
                           >
                             <ChevronLeft className="w-3.5 h-3.5" />
                           </button>
-                          <span className="text-[11px] font-mono text-purple-200/80 min-w-[40px] text-center">
+                          <span className="text-[11px] text-pink-200/80 min-w-[40px] text-center">
                             {currentIndex === -1 ? '—' : `${currentIndex + 1}/${approvedList.length}`}
                           </span>
                           <button
                             onClick={() => goTo(1)}
                             disabled={isLaunching || currentIndex === -1}
-                            className="p-1.5 rounded-lg bg-purple-800 hover:bg-purple-700 border border-purple-300/40 text-white transition-colors disabled:opacity-40"
+                            className="p-1.5 rounded-lg bg-pink-800 hover:bg-pink-700 border border-pink-300/40 text-white transition-colors disabled:opacity-40"
                             title="Next confession"
                           >
                             <ChevronRight className="w-3.5 h-3.5" />
@@ -353,13 +353,13 @@ export function HostControls() {
                         key={confession.id}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[11px] transition-colors ${
                           isFeatured
-                            ? 'bg-purple-900/60 border-purple-300 shadow-md shadow-purple-950/60'
-                            : 'bg-emerald-950/60 border-emerald-400/30'
+                            ? 'bg-pink-900/60 border-pink-300 shadow-md shadow-pink-950/60'
+                            : 'bg-pink-200 border-white'
                         }`}
                       >
-                        <span className="flex-1 truncate italic text-emerald-50">"{confession.text}"</span>
+                        <span className="flex-1 truncate italic text-rose-900">"{confession.text}"</span>
                         {isFeatured && (
-                          <span className="flex-shrink-0 px-1.5 py-0.5 rounded bg-purple-500 text-white text-[10px] font-black uppercase">
+                          <span className="flex-shrink-0 px-1.5 py-0.5 rounded bg-pink-500 text-white text-[10px] font-black uppercase">
                             On Screen
                           </span>
                         )}
@@ -367,7 +367,7 @@ export function HostControls() {
                           onClick={() => handleLaunchConfession(confession.id)}
                           disabled={isLaunching || isFeatured}
                           title="Launch to the stage big screen"
-                          className="flex-shrink-0 p-1.5 rounded-lg bg-purple-700 hover:bg-purple-600 border border-purple-300/50 text-white transition-colors disabled:opacity-40"
+                          className="flex-shrink-0 p-1.5 rounded-lg bg-pink-700 hover:bg-pink-600 border border-pink-300/50 text-white transition-colors disabled:opacity-40"
                         >
                           <Tv className="w-3.5 h-3.5" />
                         </button>
@@ -392,12 +392,12 @@ export function HostControls() {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-pink-400/20">
             <div>
               <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <h3 className="font-bold text-white text-sm font-matched uppercase tracking-wider">
-                  700 Spectator Scale & Engine Health
+                <Activity className="w-4 h-4 text-rose-900 animate-pulse" />
+                <h3 className="font-bold text-white text-sm font-display">
+                  Audience & engine health
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-950 border border-emerald-400 text-emerald-300 font-mono">
-                  OPTIMIZED FOR 700 USERS
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-pink-200 border border-white text-rose-900">
+                  LIVE
                 </span>
               </div>
               <p className="text-xs text-pink-200/80 mt-1">
@@ -406,7 +406,7 @@ export function HostControls() {
             </div>
 
             {/* Quick stats pills */}
-            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+            <div className="flex items-center gap-2 flex-wrap text-xs">
               <div className="px-3 py-1 rounded-xl bg-black/40 border border-pink-400/30 text-pink-200">
                 Connected: <span className="font-black text-white">{state.connectedAudienceCount}</span>
               </div>
@@ -421,48 +421,48 @@ export function HostControls() {
 
           {/* Stress-Test & Simulation Action Buttons */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <span className="text-xs font-bold text-pink-200 font-mono">
-              Simulate Live Spectators (Test Audience Wave):
+            <span className="text-xs font-bold text-pink-200">
+              Add fake votes (for rehearsals only):
             </span>
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 id="btn-simulate-50-spectators"
                 onClick={() => handleSimulate(50)}
                 disabled={isSimulating}
-                className="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 border border-pink-400/40 text-pink-100 text-xs font-bold font-mono transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 border border-pink-400/40 text-pink-100 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Zap className="w-3.5 h-3.5 text-amber-300" />
-                <span>+50 Spectators</span>
+                <span>+50</span>
               </button>
 
               <button
                 id="btn-simulate-100-spectators"
                 onClick={() => handleSimulate(100)}
                 disabled={isSimulating}
-                className="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 border border-pink-400/40 text-pink-100 text-xs font-bold font-mono transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 border border-pink-400/40 text-pink-100 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Zap className="w-3.5 h-3.5 text-amber-300" />
-                <span>+100 Spectators</span>
+                <span>+100</span>
               </button>
 
               <button
                 id="btn-simulate-250-spectators"
                 onClick={() => handleSimulate(250)}
                 disabled={isSimulating}
-                className="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 border border-pink-400/40 text-pink-100 text-xs font-bold font-mono transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl bg-rose-950/90 hover:bg-rose-900 border border-pink-400/40 text-pink-100 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Zap className="w-3.5 h-3.5 text-amber-300" />
-                <span>+250 Spectators</span>
+                <span>+250</span>
               </button>
 
               <button
                 id="btn-simulate-700-spectators"
                 onClick={() => handleSimulate(700)}
                 disabled={isSimulating}
-                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black font-mono shadow-md transition-all disabled:opacity-50 flex items-center gap-1.5"
+                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black shadow-md transition-all disabled:opacity-50 flex items-center gap-1.5"
               >
                 <Users className="w-3.5 h-3.5 text-white" />
-                <span>+700 Max Capacity Wave</span>
+                <span>+700</span>
               </button>
             </div>
           </div>
@@ -492,8 +492,8 @@ export function HostControls() {
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-mono font-bold text-pink-300 uppercase tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-pink-300 animate-pulse" />
+                  <span className="text-xs font-bold text-pink-300 uppercase tracking-wider">
                     SPECTATOR JOIN GATEWAY & QR CODE
                   </span>
                 </div>
@@ -501,7 +501,7 @@ export function HostControls() {
                   Live Voting Link & Stage QR Code
                 </h3>
                 <p className="text-xs text-pink-200/80 mt-0.5 max-w-lg">
-                  Spectators in the hall scan this code to vote on their phones without downloading any app.
+                  The audience scans this to vote on their phones — no app needed.
                 </p>
               </div>
             </div>
@@ -522,7 +522,7 @@ export function HostControls() {
                 onClick={handleCopyJoinLink}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
                   copiedLink
-                    ? 'bg-emerald-600 border-emerald-400 text-white'
+                    ? 'bg-pink-200 border-white text-white'
                     : 'bg-black/40 hover:bg-black/60 border-pink-400/40 text-pink-200 hover:text-white'
                 }`}
               >
@@ -549,14 +549,14 @@ export function HostControls() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-xl bg-black/40 hover:bg-black/60 border border-pink-400/30 text-pink-200 hover:text-white transition-colors"
-                title="Open Audience View in New Tab (Test as Spectator)"
+                title="Open the phone view in a new tab"
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-black/40 border border-pink-400/20 flex items-center justify-between text-xs font-mono text-pink-200 overflow-hidden">
+          <div className="p-2.5 rounded-xl bg-black/40 border border-pink-400/20 flex items-center justify-between text-xs text-pink-200 overflow-hidden">
             <span className="truncate pr-2 select-all">{joinUrl}</span>
             <span className="text-[10px] text-pink-300/80 uppercase tracking-widest flex-shrink-0 font-sans">
               Instant Mobile Route
@@ -569,7 +569,7 @@ export function HostControls() {
           <div className="p-6 rounded-3xl bg-[#40040f]/90 border-2 border-pink-300/40 shadow-xl space-y-4">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-pink-300/20">
               <div>
-                <span className="text-[11px] font-mono font-bold text-pink-300 uppercase tracking-widest">
+                <span className="text-[11px] font-bold text-pink-300 uppercase tracking-widest">
                   CURRENT STAGE QUESTION
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white font-display">
@@ -583,7 +583,7 @@ export function HostControls() {
                 <button
                   id="host-edit-active-question-btn"
                   onClick={() => openEditModal(activePoll)}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black font-mono shadow-md transition-all hover:scale-105"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 border border-white text-white text-xs font-black shadow-md transition-all hover:scale-105"
                   title="Change question text, options, or remove pfps"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -595,7 +595,7 @@ export function HostControls() {
                   <button
                     id="host-remove-active-pfps-btn"
                     onClick={() => handleRemovePfps(activePoll.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 border border-rose-400/50 text-rose-200 text-xs font-bold font-mono transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-950/80 hover:bg-red-900 border border-rose-400/50 text-rose-200 text-xs font-bold transition-all"
                     title="Remove all candidate profile pictures from this ballot"
                   >
                     <ImageOff className="w-3.5 h-3.5 text-rose-400" />
@@ -607,7 +607,7 @@ export function HostControls() {
                   <button
                     id="host-reopen-voting-btn"
                     onClick={() => updatePollStatus(activePoll.id, 'active')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-900/80 hover:bg-emerald-800 border border-emerald-400 text-emerald-200 text-xs font-bold font-mono"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-200 hover:bg-white border border-white text-rose-900 text-xs font-bold"
                   >
                     <Unlock className="w-3.5 h-3.5" />
                     <span>Open Ballot</span>
@@ -618,7 +618,7 @@ export function HostControls() {
                   <button
                     id="host-lock-envelope-btn"
                     onClick={() => updatePollStatus(activePoll.id, 'locked')}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-900/90 hover:bg-rose-800 border border-pink-300 text-white text-xs font-bold font-mono"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-900/90 hover:bg-rose-800 border border-pink-300 text-white text-xs font-bold"
                   >
                     <Lock className="w-3.5 h-3.5 text-pink-300" />
                     <span>Seal Red Envelope (Lock Votes)</span>
@@ -629,7 +629,7 @@ export function HostControls() {
                   <button
                     id="host-reveal-winner-btn"
                     onClick={() => updatePollStatus(activePoll.id, 'revealed')}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 border border-white text-white text-xs font-black font-mono shadow-md"
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 border border-white text-white text-xs font-black shadow-md"
                   >
                     <Trophy className="w-3.5 h-3.5" />
                     <span>Unseal Winner on Stage Screen</span>
@@ -640,7 +640,7 @@ export function HostControls() {
                   id="host-reset-votes-btn"
                   onClick={() => handleResetPoll(activePoll.id, activePoll.title)}
                   disabled={isResettingPollId === activePoll.id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 hover:bg-rose-950 border border-pink-400/30 text-pink-300 hover:text-white text-xs font-bold font-mono transition-all disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 hover:bg-rose-950 border border-pink-400/30 text-pink-300 hover:text-white text-xs font-bold transition-all disabled:opacity-50"
                   title="Reset all votes and hot takes for this question to 0"
                 >
                   <RotateCcw className={`w-3.5 h-3.5 ${isResettingPollId === activePoll.id ? 'animate-spin' : ''}`} />
@@ -651,8 +651,8 @@ export function HostControls() {
 
             {/* Reset confirmation notice banner */}
             {resetNotice && (
-              <div className="p-3 rounded-xl bg-emerald-950/90 border border-emerald-400 text-emerald-200 text-xs flex items-center gap-2 font-medium animate-fadeIn">
-                <Check className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+              <div className="p-3 rounded-xl bg-pink-200 border border-white text-rose-900 text-xs flex items-center gap-2 font-medium animate-fadeIn">
+                <Check className="w-4 h-4 text-rose-900 flex-shrink-0" />
                 <span>{resetNotice}</span>
               </div>
             )}
@@ -672,7 +672,7 @@ export function HostControls() {
                     <span className="font-bold text-white font-display truncate max-w-[130px]">
                       {opt.label}
                     </span>
-                    <span className="font-mono font-bold text-pink-200">
+                    <span className=" font-bold text-pink-200">
                       {opt.votes} votes
                     </span>
                   </div>
@@ -701,7 +701,7 @@ export function HostControls() {
                   id="btn-reset-all-votes"
                   onClick={() => handleResetPoll('all')}
                   disabled={isResettingPollId === 'all'}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/50 hover:bg-rose-950 border border-pink-400/30 text-pink-300 hover:text-white text-xs font-bold font-mono transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/50 hover:bg-rose-950 border border-pink-400/30 text-pink-300 hover:text-white text-xs font-bold transition-all"
                   title="Reset votes across all questions in the entire show"
                 >
                   <RotateCcw className={`w-3.5 h-3.5 ${isResettingPollId === 'all' ? 'animate-spin' : ''}`} />
@@ -727,13 +727,13 @@ export function HostControls() {
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-[10px] font-black font-mono text-pink-300 uppercase">
+                      <span className="text-[10px] font-black text-pink-300 uppercase">
                         {poll.categoryLabel}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black font-mono ${
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
                           poll.status === 'active'
-                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                            ? 'bg-pink-200 text-rose-900 border border-white'
                             : poll.status === 'locked'
                               ? 'bg-rose-950 text-rose-300 border border-rose-500/40'
                               : 'bg-amber-950 text-amber-300 border border-amber-500/40'
@@ -798,7 +798,7 @@ export function HostControls() {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-pink-300/20 text-xs font-mono">
+                  <div className="flex items-center justify-between pt-2 border-t border-pink-300/20 text-xs">
                     <div className="flex items-center gap-2">
                       <span className="text-pink-300 font-bold">
                         {poll.totalVotes} Total Votes
@@ -820,7 +820,7 @@ export function HostControls() {
                         onClick={() => switchActivePoll(poll.id)}
                         className="px-3 py-1 rounded-lg bg-rose-700 hover:bg-rose-600 text-white font-bold"
                       >
-                        Push to Stage Screen
+                        Push to stage & phones
                       </button>
                     )}
                     {isActive && (
@@ -852,7 +852,7 @@ export function HostControls() {
                       <strong className="text-amber-300">{totalPfpsInShow}</strong> candidate profile pictures currently active across show ballots.
                     </span>
                   ) : (
-                    <span className="text-emerald-300">
+                    <span className="text-rose-900">
                       ✓ All questions are currently in clean text-only mode (No PFPs active).
                     </span>
                   )}
@@ -865,7 +865,7 @@ export function HostControls() {
                 <button
                   id="btn-remove-active-poll-pfps"
                   onClick={() => handleRemovePfps(activePoll.id)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-950/90 hover:bg-red-900 border border-rose-400/40 text-rose-200 text-xs font-bold font-mono transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-950/90 hover:bg-red-900 border border-rose-400/40 text-rose-200 text-xs font-bold transition-all"
                 >
                   <ImageOff className="w-3.5 h-3.5" />
                   <span>Remove PFPs from On-Air Question ({activePollPfpCount})</span>
@@ -876,7 +876,7 @@ export function HostControls() {
                 <button
                   id="btn-remove-all-show-pfps"
                   onClick={() => handleRemovePfps()}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 border border-white text-white text-xs font-black font-mono shadow-md transition-all"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 border border-white text-white text-xs font-black shadow-md transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Strip All PFPs from Entire Show ({totalPfpsInShow})</span>
@@ -886,8 +886,8 @@ export function HostControls() {
           </div>
 
           {pfpActionMessage && (
-            <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500 text-emerald-200 text-xs flex items-center gap-2 font-medium animate-fadeIn">
-              <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            <div className="p-3 rounded-xl bg-pink-200 border border-white text-rose-900 text-xs flex items-center gap-2 font-medium animate-fadeIn">
+              <Check className="w-4 h-4 text-rose-900 flex-shrink-0" />
               <span>{pfpActionMessage}</span>
             </div>
           )}

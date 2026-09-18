@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { usePollContext } from './PollContext';
+import { JabWeMatchedBrand } from './JabWeMatchedBrand';
 import { LaceCornerDecoration } from './JabWeMatchedBrand';
 import { 
   Trophy, 
@@ -44,10 +45,15 @@ export function StageDisplayView() {
     }
   }, [state.featuredConfessionId, state.confessionsBoardActive]);
 
-  if (!activePoll) {
+  // Whatever is on the TV is what's on the phones: while the host has the
+  // waiting screen up, the stage shows the brand instead of a stale question.
+  if (state.waitingScreenActive || !activePoll) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center text-pink-200">
-        <p>No active question to display on stage.</p>
+      <div className="relative min-h-[85vh] bg-quatrefoil flex items-center justify-center p-8 overflow-hidden">
+        <div className="relative z-10 text-center">
+          <JabWeMatchedBrand size="lg" />
+          <p className="mt-6 text-pink-100/90 text-lg font-display">The next question is coming up…</p>
+        </div>
       </div>
     );
   }
@@ -82,28 +88,28 @@ export function StageDisplayView() {
           confession by confession from the Host Console. */}
       {state.confessionsBoardActive && (
         <div className="absolute inset-0 z-50 flex items-center justify-center p-6 sm:p-12 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="relative w-full max-w-3xl max-h-[75vh] flex flex-col rounded-3xl bg-gradient-to-b from-[#3a0a4a] via-[#2e0838] to-[#1e0522] border-2 border-purple-300/70 shadow-2xl overflow-hidden">
-            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-4 border-b border-purple-400/25 bg-black/30">
-              <Mail className="w-5 h-5 text-purple-300" />
-              <h3 className="font-black font-matched text-purple-100 uppercase tracking-wider text-sm sm:text-base">
+          <div className="relative w-full max-w-3xl max-h-[75vh] flex flex-col rounded-3xl bg-gradient-to-b from-[#3b040e] via-[#30030a] to-[#1e0522] border-2 border-pink-300/70 shadow-2xl overflow-hidden">
+            <div className="flex-shrink-0 flex items-center gap-2 px-5 py-4 border-b border-pink-400/25 bg-black/30">
+              <Mail className="w-5 h-5 text-pink-300" />
+              <h3 className="font-black font-display text-pink-100 text-sm sm:text-base">
                 Anonymous Confessions
               </h3>
             </div>
 
             <div ref={confessionListRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
               {state.confessions.length === 0 ? (
-                <p className="text-center text-purple-300/60 italic py-8">No confessions yet.</p>
+                <p className="text-center text-pink-300/60 italic py-8">No confessions yet.</p>
               ) : (
                 [...state.confessions].reverse().map((confession) => {
                   const isFocused = confession.id === state.featuredConfessionId;
                   return (
                     <div
                       key={confession.id}
-                      ref={(el) => (confessionItemRefs.current[confession.id] = el)}
+                      ref={(el) => { confessionItemRefs.current[confession.id] = el; }}
                       className={`p-4 rounded-2xl border text-lg sm:text-xl italic leading-snug transition-all ${
                         isFocused
-                          ? 'bg-purple-900/70 border-purple-300 shadow-lg shadow-purple-950/50 text-white scale-[1.02]'
-                          : 'bg-black/40 border-purple-400/20 text-purple-100/90'
+                          ? 'bg-pink-900/70 border-pink-300 shadow-lg shadow-pink-950/50 text-white scale-[1.02]'
+                          : 'bg-black/40 border-pink-400/20 text-pink-100/90'
                       }`}
                     >
                       "{confession.text}"
@@ -132,12 +138,12 @@ export function StageDisplayView() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/40 border border-white/40 shadow-md">
             <span className="text-xs font-script text-pink-200">uqisc presents</span>
-            <span className="font-matched text-sm font-black text-pink-100 tracking-wider matched-3d-text">
+            <span className="font-display text-sm font-black text-pink-100">
               JAB WE MATCHED
             </span>
           </div>
 
-          <span className="hidden sm:inline-block px-3 py-1 rounded-full bg-rose-950/70 border border-pink-400/40 text-xs font-bold text-pink-200 tracking-wide uppercase font-mono">
+          <span className="hidden sm:inline-block px-3 py-1 rounded-full bg-rose-950/70 border border-pink-400/40 text-xs font-bold text-pink-200 tracking-wide uppercase">
             {activePoll.categoryLabel}
           </span>
         </div>
@@ -146,9 +152,9 @@ export function StageDisplayView() {
         <div className="flex items-center gap-3">
           {activePoll.status === 'active' && (
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-950/80 border border-pink-400/60 shadow-lg shadow-red-950/60">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-xs font-black text-pink-100 tracking-wider uppercase font-mono">
-                💌 700 SPECTATOR BALLOT OPEN
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-300 animate-ping" />
+              <span className="text-xs font-black text-pink-100 tracking-wider uppercase">
+                💌 VOTING OPEN
               </span>
             </div>
           )}
@@ -156,7 +162,7 @@ export function StageDisplayView() {
           {activePoll.status === 'locked' && (
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-950/90 border border-pink-300 shadow-lg shadow-rose-950/60 animate-pulse">
               <Lock className="w-3.5 h-3.5 text-pink-300" />
-              <span className="text-xs font-black text-pink-100 tracking-wider uppercase font-mono">
+              <span className="text-xs font-black text-pink-100 tracking-wider uppercase">
                 ENVELOPE SEALED • TALLYING AUDIENCE VOTES
               </span>
             </div>
@@ -165,7 +171,7 @@ export function StageDisplayView() {
           {activePoll.status === 'revealed' && (
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-950/90 border border-amber-400 shadow-xl shadow-amber-950/50">
               <PartyPopper className="w-4 h-4 text-amber-300 animate-bounce" />
-              <span className="text-xs font-black text-amber-200 tracking-wider uppercase font-mono">
+              <span className="text-xs font-black text-amber-200 tracking-wider uppercase">
                 ENVELOPE UNSEALED • OFFICIAL MATCH VERDICT
               </span>
             </div>
@@ -241,7 +247,7 @@ export function StageDisplayView() {
           </p>
 
           <div className="flex items-center justify-center gap-4 mt-3">
-            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-black/40 border border-pink-400/30 text-xs font-bold text-pink-200 font-mono">
+            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-black/40 border border-pink-400/30 text-xs font-bold text-pink-200">
               <span>TOTAL AUDIENCE VOTES:</span>
               <span className="text-white text-base font-black">{totalVotes}</span>
             </div>
@@ -261,11 +267,11 @@ export function StageDisplayView() {
               <div className="w-16 h-16 rounded-full bg-rose-600 border-2 border-white shadow-xl flex items-center justify-center mb-3 animate-heart-thump">
                 <Heart className="w-8 h-8 text-pink-100 fill-pink-100" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white font-matched tracking-wider matched-3d-text">
+              <h2 className="text-2xl sm:text-3xl font-black text-white font-display">
                 THE RED ENVELOPE IS SEALED
               </h2>
               <p className="text-sm text-pink-200 mt-1 max-w-md">
-                700 spectator votes have been recorded! The hosts are preparing to reveal the official matchmaking verdict.
+                Votes are in. The hosts are about to reveal the result.
               </p>
               <button
                 id="stage-reveal-winner-btn"
@@ -291,11 +297,11 @@ export function StageDisplayView() {
               <Trophy className="w-10 h-10 text-rose-600" />
             </div>
 
-            <div className="text-xs font-mono font-black tracking-widest text-pink-200 uppercase mb-1">
-              THE 700 SPECTATORS HAVE DECIDED
+            <div className="text-xs font-black tracking-widest text-pink-200 uppercase mb-1">
+              THE AUDIENCE HAS DECIDED
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-black text-white font-matched tracking-wide matched-3d-text-lg">
+            <h2 className="text-3xl sm:text-5xl font-black text-white font-display-lg">
               {winnerOption.label}
             </h2>
 
@@ -306,7 +312,7 @@ export function StageDisplayView() {
             )}
 
             <div className="flex items-center justify-center gap-3 mt-4 flex-wrap">
-              <span className="px-4 py-1.5 rounded-full bg-white/20 border border-white text-white text-sm font-black font-mono">
+              <span className="px-4 py-1.5 rounded-full bg-white/20 border border-white text-white text-sm font-black">
                 {winnerOption.votes} AUDIENCE VOTES ({totalVotes > 0 ? Math.round((winnerOption.votes / totalVotes) * 100) : 0}%)
               </span>
               {winnerOption.tag && (
@@ -341,7 +347,7 @@ export function StageDisplayView() {
 
                 {/* Top Badge: Rank or Tag */}
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black font-mono ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black ${
                     isWinner
                       ? 'bg-pink-100 text-rose-800'
                       : 'bg-black/40 text-pink-200 border border-pink-400/20'
@@ -383,7 +389,7 @@ export function StageDisplayView() {
 
                 {/* Live Vote Progress Bar */}
                 <div className="mt-auto pt-2">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold mb-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold mb-1.5">
                     <span className="text-pink-200">
                       {option.votes} <span className="text-[10px] opacity-70">votes</span>
                     </span>

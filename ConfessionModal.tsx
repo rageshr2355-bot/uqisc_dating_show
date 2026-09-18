@@ -52,7 +52,7 @@ export function ConfessionModal() {
               <div className="text-[11px] font-script text-pink-200 tracking-wider">
                 totally anonymous • no name attached
               </div>
-              <h2 className="text-lg sm:text-xl font-black font-matched tracking-wider uppercase matched-3d-text">
+              <h2 className="text-lg sm:text-xl font-black font-display">
                 Anonymous Confession
               </h2>
             </div>
@@ -71,8 +71,8 @@ export function ConfessionModal() {
         <div className="p-5 sm:p-6">
           {justSubmitted ? (
             <div className="text-center py-6">
-              <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-950/60 border border-emerald-400/40 flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-7 h-7 text-emerald-300" />
+              <div className="mx-auto w-14 h-14 rounded-2xl bg-pink-200 border border-white flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-7 h-7 text-rose-900" />
               </div>
               <h3 className="text-lg font-black uppercase tracking-wide text-pink-100 mb-2">
                 Sent to the envelope
@@ -122,7 +122,7 @@ export function ConfessionModal() {
                   className="w-full px-3.5 py-3 rounded-xl bg-black/50 border border-pink-300/40 focus:border-pink-300 focus:ring-1 focus:ring-pink-300 text-white text-sm placeholder:text-pink-300/40 focus:outline-none resize-none"
                 />
                 <div className="flex justify-end mt-1">
-                  <span className="text-[11px] text-pink-300/60 font-mono">
+                  <span className="text-[11px] text-pink-300/60">
                     {text.length}/{MAX_LENGTH}
                   </span>
                 </div>

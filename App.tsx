@@ -9,7 +9,7 @@ import { JoinQrCodeModal } from './JoinQrCodeModal';
 import { StageCornerQr } from './StageCornerQr';
 import { AdminGate } from './AdminGate';
 import { ConfessionModal } from './ConfessionModal';
-import { Heart, Tv, Smartphone, Sliders, LogOut } from 'lucide-react';
+import { Heart, Tv, Sliders, LogOut } from 'lucide-react';
 
 function AppContent() {
   const { activeView, setActiveView, isAdmin, isAdminCheckPending, logoutAdmin } = usePollContext();
@@ -68,33 +68,17 @@ function AppContent() {
           <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
             <Heart className="w-4 h-4 text-pink-300 fill-pink-300 animate-heart-thump" />
             <span className="font-script text-base text-pink-200">jab we</span>
-            <span className="font-matched font-black text-pink-100 uppercase tracking-wider">
+            <span className="font-display font-black text-pink-100">
               MATCHED
             </span>
             <span className="text-pink-400/40">•</span>
-            <span className="text-pink-200 font-medium">Auditorium Dating Show & Question Polling</span>
-            <span className="text-pink-400/40">•</span>
-            <span className="text-pink-300/80 font-mono text-[11px]">700 Spectator Live Engine</span>
+            <span className="text-pink-200 font-medium">Live audience polling</span>
           </div>
 
-          {/* Quick View Switcher Footer Links — Stage & Host only ever
-              appear here once the admin passphrase has been entered. A
-              QR-code visitor lands directly on Audience Pad and never
-              sees a way to reach the other two. */}
-          <div className="flex items-center gap-4 text-xs">
-            <button
-              onClick={() => setActiveView('audience')}
-              className={`hover:text-white transition-colors flex items-center gap-1 ${
-                activeView === 'audience' ? 'text-white font-bold underline' : 'text-pink-300/80'
-              }`}
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>Audience Pad</span>
-            </button>
-
-            {isAdmin && (
-              <>
-                <span className="text-pink-400/30">|</span>
+          {/* Stage & Host links only ever appear once the admin passphrase
+              has been entered. A QR-code visitor never sees them. */}
+          {isAdmin && (
+            <div className="flex items-center gap-4 text-xs">
                 <button
                   onClick={() => setActiveView('stage')}
                   className={`hover:text-white transition-colors flex items-center gap-1 ${
@@ -123,9 +107,8 @@ function AppContent() {
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Log Out Admin</span>
                 </button>
-              </>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </footer>
     </div>

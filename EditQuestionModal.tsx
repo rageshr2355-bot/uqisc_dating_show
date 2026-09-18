@@ -57,7 +57,7 @@ export function EditQuestionModal() {
       setCategory(editingPoll.category || 'drama');
       setCategoryLabel(editingPoll.categoryLabel || '💌 JAB WE MATCHED BALLOT');
       setRequiresVoterInput(Boolean(editingPoll.requiresVoterInput));
-      setInputPromptText(editingPoll.inputPromptText || 'Spectator Hot Take Required: State your reasoning for this vote');
+      setInputPromptText(editingPoll.inputPromptText || 'Add a comment for the big screen');
       setAllowAudienceOptions(Boolean(editingPoll.allowAudienceOptions));
       setOptions(
         editingPoll.options.map((opt) => ({
@@ -206,7 +206,7 @@ export function EditQuestionModal() {
         <div className="relative p-5 sm:p-6 border-b border-pink-400/25 bg-black/30 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-rose-950 border border-pink-400/40 text-[10px] font-mono font-bold uppercase text-pink-200">
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-950 border border-pink-400/40 text-[10px] font-bold uppercase text-pink-200">
                 Host Backstage Editor
               </span>
               <span className="text-xs font-script text-pink-200">jab we matched</span>
@@ -261,7 +261,7 @@ export function EditQuestionModal() {
 
           {/* Segment / Category */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-pink-200 uppercase tracking-wider font-mono">
+            <label className="block text-xs font-bold text-pink-200 uppercase tracking-wider">
               Show Segment / Category
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -270,7 +270,7 @@ export function EditQuestionModal() {
                   key={cat}
                   type="button"
                   onClick={() => handleCategoryChange(cat)}
-                  className={`py-2 px-3 rounded-xl border text-xs font-bold font-mono transition-all text-left truncate ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all text-left truncate ${
                     category === cat
                       ? 'bg-white text-rose-950 border-white shadow-md'
                       : 'bg-black/30 border-pink-400/20 text-pink-200 hover:bg-black/50'
@@ -291,7 +291,7 @@ export function EditQuestionModal() {
               type="text"
               value={categoryLabel}
               onChange={(e) => setCategoryLabel(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-pink-300/30 text-white text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-pink-300"
+              className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-pink-300/30 text-white text-xs font-bold focus:outline-none focus:ring-1 focus:ring-pink-300"
               required
             />
           </div>
@@ -299,7 +299,7 @@ export function EditQuestionModal() {
           {/* Question Title */}
           <div>
             <label className="block text-xs font-bold text-pink-200 mb-1">
-              Question Title (The main headline shown to 700 spectators):
+              Question title:
             </label>
             <textarea
               id="edit-poll-title-input"
@@ -374,14 +374,14 @@ export function EditQuestionModal() {
                   >
                     <div className="flex items-center justify-between gap-2 border-b border-pink-400/15 pb-2">
                       <div className="flex items-center gap-2">
-                        <span className="w-5 h-5 rounded-full bg-rose-700/80 text-white flex items-center justify-center text-[10px] font-bold font-mono">
+                        <span className="w-5 h-5 rounded-full bg-rose-700/80 text-white flex items-center justify-center text-[10px] font-bold">
                           {idx + 1}
                         </span>
                         <span className="text-xs font-bold text-pink-100 font-display">
                           Option {idx + 1}
                         </span>
                         {typeof opt.votes === 'number' && opt.votes > 0 && (
-                          <span className="px-2 py-0.5 rounded-full bg-black/60 border border-pink-500/30 text-[10px] font-mono text-pink-300">
+                          <span className="px-2 py-0.5 rounded-full bg-black/60 border border-pink-500/30 text-[10px] text-pink-300">
                             {opt.votes} votes
                           </span>
                         )}
@@ -456,7 +456,7 @@ export function EditQuestionModal() {
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <span className="absolute -bottom-1 -right-1 p-0.5 bg-emerald-500 rounded-full text-[8px] text-white">
+                            <span className="absolute -bottom-1 -right-1 p-0.5 bg-pink-200 rounded-full text-[8px] text-white">
                               ✓
                             </span>
                           </div>
@@ -470,11 +470,11 @@ export function EditQuestionModal() {
                           <div className="text-xs font-bold text-pink-100 flex items-center gap-1.5">
                             <span>Candidate Profile Picture (PFP)</span>
                             {hasPfp ? (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-pink-200 text-rose-900 border border-white">
                                 ACTIVE
                               </span>
                             ) : (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-black/50 text-pink-300/80 border border-pink-500/30">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-black/50 text-pink-300/80 border border-pink-500/30">
                                 NO PFP
                               </span>
                             )}
@@ -520,7 +520,7 @@ export function EditQuestionModal() {
 
           {/* Voter Hot Take & Audience Permissions */}
           <div className="p-4 rounded-2xl bg-black/30 border border-pink-400/20 space-y-3">
-            <h4 className="text-xs font-bold text-pink-100 uppercase tracking-wider font-mono">
+            <h4 className="text-xs font-bold text-pink-100 uppercase tracking-wider">
               Audience Interaction Rules
             </h4>
 
@@ -531,13 +531,13 @@ export function EditQuestionModal() {
                 onChange={(e) => setRequiresVoterInput(e.target.checked)}
                 className="rounded border-pink-300 text-rose-600 focus:ring-0 w-4 h-4"
               />
-              <span>Require Voter Hot Take & Spice Rating</span>
+              <span>Show an optional comment box (comments appear on the stage ticker)</span>
             </label>
 
             {requiresVoterInput && (
               <div>
                 <label className="block text-[11px] font-bold text-pink-200 mb-1">
-                  Hot Take Prompt Label (Shown above text box on phone):
+                  Comment box label (shown on phones):
                 </label>
                 <input
                   type="text"
@@ -556,7 +556,7 @@ export function EditQuestionModal() {
                 onChange={(e) => setAllowAudienceOptions(e.target.checked)}
                 className="rounded border-pink-300 text-rose-600 focus:ring-0 w-4 h-4"
               />
-              <span>Allow 700 Spectators to Nominate Additional Write-in Options</span>
+              <span>Let the audience nominate extra options</span>
             </label>
           </div>
 
@@ -568,7 +568,7 @@ export function EditQuestionModal() {
           )}
 
           {successMessage && (
-            <div className="p-3 rounded-xl bg-emerald-950/90 border border-emerald-500 text-emerald-200 text-xs flex items-center gap-2 font-medium">
+            <div className="p-3 rounded-xl bg-pink-200 border border-white text-rose-900 text-xs flex items-center gap-2 font-medium">
               <Check className="w-4 h-4 flex-shrink-0" />
               <span>{successMessage}</span>
             </div>

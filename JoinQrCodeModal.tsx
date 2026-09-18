@@ -26,7 +26,6 @@ export function JoinQrCodeModal() {
     showStageCornerQr,
     setShowStageCornerQr,
     publicWebsiteUrl,
-    devWebsiteUrl,
     state
   } = usePollContext();
 
@@ -139,13 +138,13 @@ export function JoinQrCodeModal() {
               <Heart className="w-3.5 h-3.5 fill-pink-300 text-pink-300" />
             </div>
 
-            <h3 className="text-2xl sm:text-3xl font-black font-matched text-pink-100 matched-3d-text uppercase tracking-wide">
+            <h3 className="text-2xl sm:text-3xl font-black font-display text-pink-100">
               SCAN TO JOIN & VOTE
             </h3>
 
             {/* Zero Friction / No Sign-in Highlight */}
-            <div className="mt-1 mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 text-[11px] sm:text-xs font-bold tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="mt-1 mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-200 border border-white text-rose-900 text-[11px] sm:text-xs font-bold tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-pink-300 animate-pulse" />
               <span>100% Free & Open • No Sign-In Required</span>
             </div>
 
@@ -180,9 +179,9 @@ export function JoinQrCodeModal() {
             </div>
 
             {/* Quick Helper Badge */}
-            <div className="mt-4 flex items-center justify-center gap-2 text-xs font-mono text-pink-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="font-semibold text-emerald-300">Live & Ready to Scan</span>
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-pink-200">
+              <span className="w-2 h-2 rounded-full bg-pink-300 animate-ping" />
+              <span className="font-semibold text-rose-900">Live & Ready to Scan</span>
               <span>•</span>
               <span>Auditorium Session ({state.connectedAudienceCount} in Hall)</span>
             </div>
@@ -191,7 +190,7 @@ export function JoinQrCodeModal() {
             <div className="mt-4 p-2 sm:p-2.5 rounded-2xl bg-black/50 border border-pink-400/30 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 pl-2 overflow-hidden text-left min-w-0">
                 <Smartphone className="w-4 h-4 text-pink-400 flex-shrink-0" />
-                <span className="text-[11px] sm:text-xs font-mono text-pink-100 truncate select-all">
+                <span className="text-[11px] sm:text-xs text-pink-100 truncate select-all">
                   {joinUrl}
                 </span>
               </div>
@@ -202,7 +201,7 @@ export function JoinQrCodeModal() {
                   onClick={handleCopyLink}
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     copied 
-                      ? 'bg-emerald-600 text-white' 
+                      ? 'bg-pink-200 text-white' 
                       : 'bg-rose-600 hover:bg-rose-500 text-white shadow-md'
                   }`}
                   title="Copy Audience Join URL to Clipboard"
@@ -229,10 +228,10 @@ export function JoinQrCodeModal() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-pink-300">
                   🌐 Live Event Website URL
                 </span>
-                <span className="text-[10px] text-emerald-300 font-medium">Public • Anyone Can Join</span>
+                <span className="text-[10px] text-rose-900 font-medium">Public • Anyone Can Join</span>
               </div>
               <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-black/70 border border-pink-500/30">
-                <span className="text-xs font-mono text-pink-100 truncate select-all">{publicWebsiteUrl}</span>
+                <span className="text-xs text-pink-100 truncate select-all">{publicWebsiteUrl}</span>
                 <button
                   type="button"
                   onClick={async () => {
@@ -248,7 +247,7 @@ export function JoinQrCodeModal() {
                   }}
                   className="px-2.5 py-1 rounded-lg bg-pink-900/60 hover:bg-pink-800 text-pink-100 text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0"
                 >
-                  {copiedWebsiteUrl ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copiedWebsiteUrl ? <Check className="w-3 h-3 text-rose-900" /> : <Copy className="w-3 h-3" />}
                   <span>{copiedWebsiteUrl ? 'Copied' : 'Copy'}</span>
                 </button>
               </div>
@@ -330,7 +329,7 @@ export function JoinQrCodeModal() {
                     value={inputUrl}
                     onChange={(e) => setInputUrl(e.target.value)}
                     placeholder="https://your-domain.com?view=audience"
-                    className="flex-1 px-3 py-1.5 rounded-xl bg-black/80 border border-pink-400/40 text-white text-xs font-mono focus:outline-none focus:border-rose-400"
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-black/80 border border-pink-400/40 text-white text-xs focus:outline-none focus:border-rose-400"
                   />
                   <button
                     type="submit"

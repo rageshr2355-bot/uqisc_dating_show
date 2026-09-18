@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, PollQuestion, AudienceHotTake, ReactionBurst, UserVoteInput, CreateOptionPayload, CreatePollPayload, UpdatePollPayload, Confession } from './types';
-import { INITIAL_POLLS, INITIAL_HOT_TAKES } from './initialPolls';
 import { sounds } from './audio';
 import confetti from 'canvas-confetti';
 
@@ -71,23 +70,18 @@ interface PollContextType {
 const PollContext = createContext<PollContextType | undefined>(undefined);
 
 export function PollProvider({ children }: { children: React.ReactNode }) {
+  // Nothing is shown until the server's INIT_STATE arrives — phones stay on
+  // the waiting screen rather than flashing a stale or demo question.
   const [state, setState] = useState<AppState>({
-    polls: INITIAL_POLLS,
-    activePollId: INITIAL_POLLS[0]?.id || 'poll-envelope-1',
-    hotTakes: INITIAL_HOT_TAKES,
-    reactionCounts: {
-      '🌹': 342,
-      '🚩': 215,
-      '🔥': 489,
-      '💔': 118,
-      '🍿': 276,
-      '💖': 512,
-    },
+    polls: [],
+    activePollId: '',
+    hotTakes: [],
+    reactionCounts: { '🌹': 0, '🚩': 0, '🔥': 0, '💔': 0, '🍿': 0, '💖': 0 },
     connectedAudienceCount: 1,
     confessions: [],
     featuredConfessionId: null,
     confessionsBoardActive: false,
-    waitingScreenActive: false,
+    waitingScreenActive: true,
   });
 
   // Initialize view from URL if provided (e.g. ?view=audience, ?view=stage, ?view=host or paths /stage, /host)
@@ -1029,7 +1023,7 @@ export function PollProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const activePoll = state.polls.find((p) => p.id === state.activePollId) || state.polls[0];
+  const activePoll = state.polls.find((p) => p.id === state.activePollId);
 
   return (
     <PollContext.Provider
